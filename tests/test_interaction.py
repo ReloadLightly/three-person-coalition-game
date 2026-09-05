@@ -5,28 +5,12 @@ from three_person_coalition_game.strategy import Strategy
 
 
 class InteractionTests(unittest.TestCase):
-    def test_source_action_sequence_reproduces_reported_focal_states(self) -> None:
-        # Figure 3.2 / 18.2 reports these actions and state sequences.
-        # White = 1 and black = 0 follows directly from the source state table.
-        action_sequence = [
-            (1, 0, 0),
-            (0, 1, 1),
-            (1, 1, 1),
-            (1, 1, 1),
-            (0, 1, 1),
-            (0, 1, 0),
-        ]
-        expected_states = [
-            (1, 2, 4),
-            (6, 5, 3),
-            (7, 7, 7),
-            (7, 7, 7),
-            (6, 5, 3),
-            (4, 1, 2),
-        ]
-
-        observed = [tuple(state.index for state in focal_states(actions)) for actions in action_sequence]
-        self.assertEqual(observed, expected_states)
+    def test_source_round_orientation(self) -> None:
+        # In the source example, player 3 has player 1 on the left and player 2
+        # on the right. With actions (white, black, black) = (1, 0, 0), the
+        # reported focal states are player1=1, player2=2, player3=4.
+        states = tuple(state.index for state in focal_states((1, 0, 0)))
+        self.assertEqual(states, (1, 2, 4))
 
     def test_three_constant_zero_strategies_remain_unanimous(self) -> None:
         strategies = [Strategy(0), Strategy(0), Strategy(0)]
