@@ -4,7 +4,7 @@
 > **Status:** Protocol  
 > **Implementation permitted after M0:** deterministic stage game and state representation only
 
-This document is the scientific contract for the faithful-replication phase. It records what is supported by the sources, what remains ambiguous, and what must not be invented merely to make the code run.
+This document is the scientific contract for the faithful-replication phase. It records which **concepts and mechanisms** are supported by the sources, which numerical values are historically recovered, and which numerical values may remain explicit reconstruction parameters. Faithfulness applies first to the mechanism. A missing historical constant never licenses deleting a documented mechanism.
 
 ## 1. Source hierarchy
 
@@ -12,15 +12,19 @@ This document is the scientific contract for the faithful-replication phase. It 
 |:---|:---|:---|:---|
 | **S1** | Akiyama & Kaneko (1995), *Evolution of Cooperation, Differentiation, Complexity, and Diversity in an Iterated Three-Person Game*, *Artificial Life* 2(3):293–304; arXiv `adap-org/9504002` | Primary scientific specification | Highest authority for the original model when inspected directly |
 | **S2** | Akiyama & Kaneko, *Evolution of Communication and Strategies in an Iterated Three-Person Game*, *Artificial Life V*, pp. 193–201 | Detailed conference specification and replication target | Directly inspected for M0 |
-| **S3** | Akiyama & Kaneko, BIES 1995, pp. 76–83 | Earlier version cited by S2 | Not yet inspected; cannot currently resolve disagreements |
+| **S3** | Akiyama & Kaneko, BIES 1995, pp. 76–83 | Earlier version cited by S2 | Not yet independently inspected |
+| **S4** | *三人ゲームにおける協力の発生とその進化*, 物性研究 65-1 (1995-10) | Contemporary detailed Japanese exposition | Used to recover explicit simulation parameter values |
 
-### Source rule
+### Fidelity rule
 
-1. A mechanism may be marked **specified** only when a source defines it sufficiently for implementation.
-2. A numerical value may be marked **fixed** only when a source provides it for the relevant experiment.
-3. A plausible reconstruction is not a source fact.
-4. If S1 and S2 disagree, the disagreement is recorded before either version is chosen.
-5. Any reconstruction choice required for execution must be exposed as such and tested for sensitivity later.
+1. **Concepts, mechanisms, and theoretical structure must be source-anchored.** We do not invent a new selection mechanism, coalition rule, strategy representation, mutation mechanism, or explanatory theory and call it a replication.
+2. **A documented mechanism must be implemented even when its exact historical numerical value is unknown.** Omitting the mechanism would change the model more fundamentally than choosing a provisional value.
+3. **A numerical value has one of two statuses:**
+   - **historical baseline** — directly recovered from a source for the relevant experiment;
+   - **reconstruction parameter** — explicitly chosen because the mechanism is known but the exact historical value is not yet recovered.
+4. Reconstruction parameters are never presented as source facts. They remain configurable and are subjected to sensitivity analysis.
+5. Source-recovered numerical values are the baseline for faithful replication, but they are not treated as theoretically privileged constants. Parameter variation is scientifically interesting and belongs in later robustness experiments.
+6. If sources disagree on a mechanism or parameter, the discrepancy is documented before the replication baseline is frozen.
 
 ## 2. Model skeleton supported by the sources
 
@@ -34,7 +38,7 @@ a_i \in \{0,1\}.
 
 The symbols `0` and `1` are intentionally symmetric: unlike `C` and `D` in the Prisoner's Dilemma, the source does not assign them intrinsic cooperative or defective meanings.
 
-**Status:** specified.
+**Status:** mechanism specified.
 
 ### 2.2 Coalition payoff rule
 
@@ -46,13 +50,13 @@ For the three-player action profile:
 
 Because there are three players and two actions, these cases exhaust all eight action profiles.
 
-**Status:** specified.
+**Status:** mechanism and payoff values specified.
 
 ### 2.3 Relational position
 
 The source arranges the three players in a circle and distinguishes a focal player's **left** and **right** partners. The game rule itself retains left/right symmetry, but a strategy is allowed to distinguish these relational positions. The authors later report that removing this ability prevents the emergence of temporal differentiation in their simulations.
 
-**Status:** specified at the conceptual level.
+**Status:** mechanism specified at the conceptual level.
 
 **Implementation detail still to fix:** exact canonical ordering of `(left, right, self)` when converting an action profile to the integer state used by the strategy representation.
 
@@ -60,59 +64,65 @@ The source arranges the three players in a circle and distinguishes a focal play
 
 Each round corresponds to one of eight states defined by the binary combination of the three players' hands. From a player's perspective, the history of these states provides the input to the strategy.
 
-**Status:** specified conceptually; exact indexing convention must be reconstructed before M1 state encoding is frozen.
+**Status:** mechanism specified conceptually; exact indexing convention must be reconstructed before M1 state encoding is frozen.
 
 ### 2.5 Iterated interaction
 
-The three-player stage game is repeated until a fixed maximum round count. The later simulations reported in S2 use:
+The three-player stage game is repeated until a fixed maximum round count.
+
+Historical baseline recovered from S2/S4:
 
 - **maximum rounds per interaction:** `1000`.
 
 The entire repeated sequence among three players is called an interaction or communication.
 
-**Status:** fixed for the reported S2 simulations.
+**Status:** mechanism specified; baseline value recovered.
 
 ### 2.6 Strategy memory
 
 A strategy refers to a finite history of prior round states. Histories can therefore be represented as octonary strings because every round has eight possible states.
 
-For the reported simulations S2 states:
+Historical baseline recovered from S2/S4:
 
 - **maximum memory length:** `4`;
 - **initial species:** `6`;
 - **initial strategy memory length:** `1`;
 - initial strategy trees are generated randomly.
 
-**Status:** these experiment-level values are specified.
+**Status:** mechanism specified; these experiment-level values are recovered.
 
 ### 2.7 Strategy representation
 
 The source describes a strategy as a list/tree over finite octonary history strings. A strategy determines whether the player's next hand is `0` or `1`; the initial hand is also encoded by the strategy.
 
-The paper describes branch addition/removal as mutation of this tree representation.
+The paper describes mutation of this tree representation.
 
-**Status:** partially specified.
+**Status:** mechanism specified; exact executable semantics remain partly unresolved.
 
-**Unresolved before M2:** exact executable semantics for matching a finite current history against the tree/list when multiple stored sequences could match; exact serialization; exact handling of histories shorter than the maximum memory.
+**Unresolved before M2:** exact matching semantics when multiple stored sequences could match; exact serialization; exact handling of histories shorter than the maximum memory; exact initial-hand genotype encoding.
 
 ### 2.8 Species
 
 Players with the same strategy are treated as the same species. Evolution operates on species population fractions.
 
-**Status:** specified.
+Historical baseline recovered from S4:
+
+- **maximum number of species:** `9`.
+
+**Status:** mechanism specified; baseline capacity recovered.
 
 ### 2.9 Tournament scoring
 
 Within a generation, a player/species participates in the iterated three-person game against possible pairs of other players, including players from its own species. Scores over these interactions determine the species score.
 
-**Status:** concept specified; exact weighting/enumeration requires reconstruction.
+**Status:** mechanism specified; exact weighting/enumeration still requires reconstruction. If exact historical weighting remains unavailable, M3 must implement the documented tournament mechanism with an explicit weighting convention and test sensitivity rather than omit tournament fitness.
 
 ### 2.10 Population update
 
-S2 gives a replicator-like update in which the change in species fraction is proportional to the species' excess score over the population mean. Written in equivalent notation:
+S2 gives a replicator-like update in which the change in species fraction is proportional to the species' excess score over the population mean:
 
 \[
-x_i(t+1)-x_i(t) = \delta\,[s_i-\bar{s}]\,x_i(t),
+x_i(t+1)-x_i(t) = d\,[s_i-\bar{s}]\,x_i(t),
 \]
 
 followed by normalization of the population fractions.
@@ -122,27 +132,60 @@ Where:
 - `x_i(t)` is the population fraction of species `i`;
 - `s_i` is its score;
 - `\bar{s}` is the population-average score;
-- `\delta` is described as a growth constant.
+- `d` is the growth constant.
 
-**Status:** equation specified; numerical `delta` not yet resolved from the inspected S2 text.
+Historical baseline recovered from S4:
+
+- **growth constant:** `d = 0.2`.
+
+**Status:** mechanism and historical baseline recovered.
 
 ### 2.11 Extinction
 
-A species whose score is below the average and whose population falls below a lower bound (`KillLimit` in the source) is eliminated.
+A species whose score is below the population average and whose population falls below a lower bound (`KillLimit`) is eliminated.
 
-**Status:** rule specified; numerical `KillLimit` unresolved in the currently inspected source material.
+Historical baseline recovered from S4:
+
+- **`KillLimit = 0.2`**.
+
+S4 also notes the substantive role of this parameter: lower `KillLimit` permits more strategy variation/species persistence, while computational limits motivated a relatively small maximum species count.
+
+**Status:** mechanism and historical baseline recovered.
 
 ### 2.12 Mutation
 
-When the population is updated, the paper reports a strategy mutation rate of:
+Mutation changes the strategy tree. S4 reports the following historical simulation settings:
 
-- **mutation ratio:** `0.1` in later examples.
+- **`PointAdd = 0.1`**;
+- **`PointRemove = 0.1`**;
+- **`Dupli = 0.001`**;
+- **`RemoveRecursively = 0.001`**.
 
-Mutation changes the strategy tree by adding or removing a branch.
+S2 separately describes a mutation ratio of `0.1` in later examples and states that mutation adds or removes branches.
 
-**Status:** rate specified for later examples; exact operator semantics are only partially specified.
+**Status:** mutation as a mechanism is specified; several historical parameter values are recovered. Exact executable operator semantics and the relationship between S2's generic `0.1` statement and S4's named mutation operations still require reconstruction before M3.
 
-## 3. Exhaustive stage-game contract
+## 3. Historical baseline currently recovered
+
+**Table 1 — Baseline parameter set from the contemporary sources**
+
+| Parameter | Historical baseline | Status |
+|:---|---:|:---|
+| Maximum rounds | `1000` | Recovered |
+| Growth constant `d` | `0.2` | Recovered |
+| `KillLimit` | `0.2` | Recovered |
+| Maximum memory length | `4` | Recovered |
+| Initial species count | `6` | Recovered |
+| Initial memory length | `1` | Recovered |
+| Maximum species count | `9` | Recovered |
+| `PointAdd` | `0.1` | Recovered |
+| `PointRemove` | `0.1` | Recovered |
+| `Dupli` | `0.001` | Recovered |
+| `RemoveRecursively` | `0.001` | Recovered |
+
+These values define the initial historical-replication baseline unless a higher-authority source contradicts them. Later robustness experiments should deliberately vary scientifically meaningful parameters, especially `d`, `KillLimit`, mutation rates, memory length, and species capacity.
+
+## 4. Exhaustive stage-game contract
 
 M1 must reproduce this table exactly before any repeated-game logic is introduced.
 
@@ -166,7 +209,7 @@ M1 must reproduce this table exactly before any repeated-game logic is introduce
 
 These are scientific invariants, not test-count targets.
 
-## 4. Reported qualitative phenomena to reproduce later
+## 5. Reported qualitative phenomena to reproduce later
 
 These are **replication targets**, not current findings of this repository.
 
@@ -194,37 +237,45 @@ At later stages, multiple communication periods may coexist. The source interpre
 
 When strategies cannot distinguish left from right, the authors report class differentiation but not temporal differentiation.
 
-## 5. Ambiguity ledger
+## 6. Ambiguity ledger
 
-No item in this table may be silently filled with a convenient default.
+The purpose of this ledger is to prevent **conceptual/mechanistic invention**, not to freeze the project whenever a tunable number is uncertain.
 
 | ID | Unresolved detail | Why it matters | Resolution path | Blocks |
 |:---|:---|:---|:---|:---|
 | A1 | Exact binary-to-state indexing from each focal player's perspective | Strategy histories depend on state identity | Compare S1/S2 tables and worked examples | M1 state encoding |
-| A2 | Exact octonary tree/list matching semantics | Different matching rules define different strategies | Reconstruct from S1 text/examples; inspect S3 if necessary | M2 |
-| A3 | Initial-hand encoding in the strategy genotype | Changes transient dynamics | Recover exact representation from source | M2 |
-| A4 | Exact scoring weights for species triples / same-species combinations | Changes fitness and selection pressure | Recover tournament definition mathematically from S1 | M3 |
-| A5 | Numerical growth constant `delta` | Changes population dynamics and extinction timing | Search S1/S3 and any author code/material | M3 |
-| A6 | Numerical `KillLimit` | Changes diversity and persistence | Search S1/S3 and any author code/material | M3 |
-| A7 | Exact mutation operation and location sampling | Changes accessible strategy space | Reconstruct tree mutation procedure from source | M3 |
-| A8 | Whether mutation probability `0.1` is per species, per reproduction/update, or another unit | Changes effective mutation rate | Resolve exact wording in S1/S3 | M3 |
-| A9 | Random-tree initialization distribution | Can affect early evolutionary path | Recover generator or define explicit reconstruction sensitivity study | M3 |
-| A10 | Number of independent runs / original random seeds | Determines what constitutes faithful statistical reproduction | Search source and archival material | M4 |
-| A11 | Exact criteria used by authors to label regimes/periods | Needed to avoid subjective replication claims | Derive measurable definitions before frozen run | M4 |
+| A2 | Exact octonary tree/list matching semantics | Different matching rules define different strategies | Reconstruct from S1 text/examples; inspect S3 if useful | M2 |
+| A3 | Initial-hand encoding in the strategy genotype | Changes transient dynamics | Recover representation from source | M2 |
+| A4 | Exact scoring weights for species triples / same-species combinations | Changes fitness landscape | Recover tournament definition; if still ambiguous, expose weighting as a reconstruction parameter and test sensitivity | M3 baseline freeze |
+| A5 | Exact mutation operation and location sampling | Changes accessible strategy space | Reconstruct tree mutation procedure from source | M3 |
+| A6 | Relationship between S2's generic mutation ratio `0.1` and S4's named mutation operators | Affects historical baseline interpretation | Compare source formulations | M3 baseline freeze |
+| A7 | Random-tree initialization distribution | Can affect early evolutionary path | Recover generator or define explicit reconstruction distribution plus sensitivity study | M3 baseline freeze |
+| A8 | Number of independent runs / original random seeds | Affects comparison with reported qualitative behavior | Search source/archival material; use a new declared multi-seed plan regardless | M4 |
+| A9 | Exact criteria used by authors to label regimes/periods | Needed to avoid subjective replication claims | Define measurable regime diagnostics before frozen run | M4 |
 
-## 6. What M0 deliberately does not infer
+### Resolved during M0
 
-The following tempting choices are prohibited at this stage:
+- numerical growth constant: `d = 0.2`;
+- extinction threshold: `KillLimit = 0.2`;
+- maximum species count: `9`;
+- named mutation settings: `PointAdd = 0.1`, `PointRemove = 0.1`, `Dupli = 0.001`, `RemoveRecursively = 0.001`.
 
-- setting `delta = 1` because it is convenient;
-- choosing an arbitrary extinction threshold;
-- treating species triples as uniformly weighted without source support;
-- implementing a generic genetic-programming tree and calling it the original strategy representation;
-- interpreting `0` as cooperation and `1` as defection;
-- mapping the three players to named countries;
-- treating one visually similar trajectory as a successful replication.
+## 7. What must not be invented
 
-## 7. Milestone gates
+The prohibition is about changing the **scientific mechanism** while pretending to replicate the paper. We must not:
+
+- invent a different coalition payoff mechanism;
+- replace the finite-history strategy system with a generic neural network or unrelated GP representation and call it faithful;
+- remove extinction because its threshold is inconvenient;
+- remove the growth/selection update because its coefficient is uncertain;
+- replace the source mutation mechanism with an unrelated optimizer without labeling it an extension;
+- interpret `0` as cooperation and `1` as defection;
+- map the three players to named countries inside the faithful replication;
+- treat one visually similar trajectory as a successful replication.
+
+What **is** legitimate is to estimate, select, calibrate, or sweep a numerical parameter when its mechanism is source-supported but its exact value is unavailable—provided the value is labeled as a reconstruction choice rather than historical fact.
+
+## 8. Milestone gates
 
 ### M0 — Source reconstruction
 
@@ -234,9 +285,10 @@ The following tempting choices are prohibited at this stage:
 
 - source hierarchy is fixed;
 - stage-game rule is explicit;
-- known experiment parameters are separated from unresolved parameters;
+- mechanism fidelity is distinguished from parameter-value uncertainty;
+- recovered historical baseline values are recorded;
 - reported phenomena are recorded as replication targets rather than findings;
-- ambiguity ledger exists;
+- remaining mechanistic ambiguities are explicit;
 - M1 scope is narrow and testable.
 
 ### M1 — Stage game + state representation
@@ -264,7 +316,7 @@ Starts only after M1 is independently checked and A2/A3 are resolved.
 
 ### M3 — Evolutionary ecology
 
-Starts only after the population update, tournament weighting, extinction, and mutation semantics are source-anchored or explicitly designated reconstruction choices.
+Implements **all documented evolutionary mechanisms**: tournament fitness, replicator-like growth, normalization, extinction, species turnover, and mutation. Historical baseline values are used where recovered; any remaining numerical uncertainty becomes explicit configuration plus sensitivity analysis, not a reason to omit a mechanism.
 
 ### M4 — Frozen replication
 
@@ -274,8 +326,6 @@ Starts only after exploratory reconstruction choices and regime metrics are froz
 
 Starts only after a citable faithful-replication release exists. Any IR mapping must be a separate experimental layer and must not modify the evidence for the historical replication.
 
-## 8. M0 strongest defensible statement
+## 9. M0 strongest defensible statement
 
-> The available source material specifies a minimal deterministic three-player coalition game and enough of its evolutionary architecture to define a replication program, but several implementation-critical details remain unresolved and therefore should not yet be guessed in code.
-
-That is the only scientific claim this repository is intended to support at M0.
+> The contemporary sources specify the mechanisms of the three-person coalition ecology and now provide a substantial historical baseline parameter set, including `d = 0.2` and `KillLimit = 0.2`. Remaining uncertainty concerns some executable semantics and sampling details; these must be reconstructed explicitly, while numerical uncertainty may be handled through transparent parameter choices and sensitivity analysis without deleting source-supported mechanisms.
