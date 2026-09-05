@@ -12,7 +12,7 @@
 
 This repository aims to faithfully reconstruct the artificial-life model introduced by Eizo Akiyama and Kunihiko Kaneko for studying the evolution of coalition structure, communication, cooperation, exploitation, and role differentiation in an iterated three-person game. The original model is deliberately minimal: three players repeatedly choose between two initially meaningless actions; a two-player subgroup can earn a payoff only by excluding the third player; finite-memory strategies evolve through selection and mutation. The reported simulations move through qualitatively different social regimes, including persistent class differentiation, temporal rotation of the excluded role, and later diversification of communication patterns.
 
-The project begins with a **replication-first** objective. M0 contains no simulator and reports no findings. It reconstructs the paper's scientific contract, separates source-supported details from unresolved ambiguities, and fixes the source hierarchy that will govern later implementation. A geopolitical or international-relations interpretation is intentionally deferred until the original mechanism has been independently reproduced.
+The project begins with a **replication-first** objective. M0 contains no simulator and reports no findings. It reconstructs the paper's scientific contract, distinguishes source-supported mechanisms from numerical parameter choices, and fixes the source hierarchy that will govern later implementation. A geopolitical or international-relations interpretation is intentionally deferred until the original mechanism has been independently reproduced.
 
 ## 1. Research question
 
@@ -32,7 +32,7 @@ The attraction is not an analogy in which countries are relabeled artificial org
 
 At the current **Protocol** stage, this repository makes only two contributions:
 
-1. **Replication protocol.** A source-to-model reconstruction of the original experiment, with unresolved details made explicit rather than guessed.
+1. **Replication protocol.** A source-to-model reconstruction of the original experiment that distinguishes mechanism fidelity from parameter uncertainty.
 2. **Artifact design.** A deliberately small executable-paper structure in which later code, experiments, evidence, and claims will remain traceable to the sources.
 
 There are no empirical or methodological novelty claims yet.
@@ -43,7 +43,8 @@ The source hierarchy is fixed for the replication phase:
 
 1. **Journal/preprint specification** — Eizo Akiyama & Kunihiko Kaneko, *Evolution of Cooperation, Differentiation, Complexity, and Diversity in an Iterated Three-Person Game*, *Artificial Life* 2(3), 293–304 (1995). DOI: https://doi.org/10.1162/artl.1995.2.3.293. Public preprint: https://arxiv.org/abs/adap-org/9504002.
 2. **ALife V proceedings version** — Eizo Akiyama & Kunihiko Kaneko, *Evolution of Communication and Strategies in an Iterated Three-Person Game*, in *Artificial Life V: Proceedings of the Fifth International Workshop on the Synthesis and Simulation of Living Systems*.
-3. **Earlier BIES version** — cited by the ALife V paper as *Evolution of cooperation, differentiation, complexity, and diversity in an iterated three-person game*, BIES 1995, pp. 76–83. This source has not yet been independently inspected in this repository and will not be used to resolve ambiguities until obtained.
+3. **Earlier BIES version** — cited by the ALife V paper as *Evolution of cooperation, differentiation, complexity, and diversity in an iterated three-person game*, BIES 1995, pp. 76–83. This source has not yet been independently inspected in this repository.
+4. **Contemporary Japanese detailed exposition** — *三人ゲームにおける協力の発生とその進化*, 物性研究 65-1 (1995-10), used in M0 to recover several explicit simulation parameter values.
 
 Where sources differ, the discrepancy must be documented before implementation changes.
 
@@ -55,7 +56,7 @@ Where sources differ, the discrepancy must be documented before implementation c
 |:---|:---|:---|:---|
 | R1 | Reconstruct the stage game exactly | Exhaustive enumeration of all 8 action profiles | Every payoff matches the source-defined coalition rule |
 | R2 | Reconstruct finite-history strategy semantics | Hand-worked trajectories from source examples | State/history/action transitions agree exactly |
-| R3 | Reconstruct evolutionary population dynamics | Source-derived tournament and update equations | No unspecified parameter is silently invented |
+| R3 | Reconstruct evolutionary population dynamics | Source-derived mechanisms plus explicit parameterization | No source mechanism is omitted; source values are used when recovered, while uncertain values remain explicit tunable parameters |
 | R4 | Reproduce reported qualitative regimes | Frozen multi-run replication | Evidence supports, fails to support, or leaves each regime unresolved |
 | R5 | Separate replication from IR extension | Release boundary before any geopolitical remapping | No IR-specific variable enters the faithful replication |
 
@@ -68,7 +69,9 @@ The original system contains four conceptual layers:
 3. **Ecology** — players sharing a strategy form a species; species receive scores from interactions with other strategy combinations.
 4. **Evolution** — population shares change with relative score and strategies mutate.
 
-M0 does not implement these layers. It records what the sources actually specify and what still needs reconstruction. See [`REPLICATION_PROTOCOL.md`](REPLICATION_PROTOCOL.md).
+The replication rule is strict about **mechanisms**, not dogmatic about numerical constants. A mechanism documented by the source must be implemented even when its exact historical parameter value is unknown. When a value is source-recovered, it becomes the historical baseline; when it is not, the implementation uses an explicitly labeled reconstruction value and later tests sensitivity to that choice. Missing a number is never a reason to delete the mechanism.
+
+M0 does not yet implement these layers. See [`REPLICATION_PROTOCOL.md`](REPLICATION_PROTOCOL.md).
 
 ## 7. Evidence protocol
 
@@ -78,7 +81,7 @@ The replication will follow this order:
 2. deterministic game checks;
 3. deterministic strategy checks;
 4. evolutionary-mechanism reconstruction;
-5. minimal exploratory calibration only where source ambiguity makes it unavoidable;
+5. minimal exploratory calibration and parameter sensitivity where needed;
 6. frozen replication runs;
 7. robustness analysis;
 8. only then, a separately labeled IR extension.
@@ -97,7 +100,9 @@ The model is promising for later IR work because it allows coalition structure a
 
 ## 10. Limitations and threats to validity
 
-The immediate replication risks are source ambiguity rather than computational scale. Several details required for exact reproduction are not fully specified in the ALife V proceedings excerpt, including at least the numerical growth constant, the extinction threshold, exact tournament weighting, and some mutation semantics. These are tracked explicitly in the protocol.
+The immediate replication risks concern exact executable semantics more than the existence of the model's mechanisms. Several details still require reconstruction, including state indexing, strategy-tree matching, tournament weighting, and exact mutation operator semantics.
+
+Two parameter values that were initially unresolved from the ALife V proceedings have now been recovered from a contemporary Japanese exposition of the model: **growth constant `d = 0.2`** and **`KillLimit = 0.2`**. The same source also reports `max-round = 1000`, `MaxMemoryLength = 4`, maximum species count `9`, and mutation-related settings `PointAdd = 0.1`, `PointRemove = 0.1`, `Dupli = 0.001`, and `RemoveRecursively = 0.001`. These are historical baseline values, not sacred constants: robustness experiments should deliberately vary them after faithful baseline reproduction.
 
 A second risk is conceptual overreach. Even a successful replication would establish behavior of this artificial ecology, not a validated model of states, alliances, or geopolitics.
 
@@ -110,7 +115,7 @@ Not yet available. M0 deliberately contains no executable model.
 | Path | Scientific role |
 |:---|:---|
 | `README.md` | Compact paper and current scientific status |
-| `REPLICATION_PROTOCOL.md` | Source-to-model contract, ambiguity ledger, and milestone gates |
+| `REPLICATION_PROTOCOL.md` | Source-to-model contract, parameter provenance, ambiguity ledger, and milestone gates |
 | `SCIENTIFIC_REPOSITORY_STANDARD.md` | Pinned governing standard for repository development |
 
 No empty implementation directories are created at M0.
@@ -131,14 +136,13 @@ A repository license has not yet been selected at M0. No downstream deployment o
 
 ## Current milestone: M0
 
-M0 is complete when the source hierarchy, formal model skeleton, known parameters, unresolved ambiguities, replication targets, and M1 boundary are inspectable and internally consistent.
+M0 is complete when the source hierarchy, formal model skeleton, known parameters, explicitly reconstructable parameters, replication targets, and M1 boundary are inspectable and internally consistent.
 
 ### Explicit non-goals for M0
 
 - no Python package;
 - no simulator;
 - no evolutionary loop;
-- no parameter fitting;
 - no figures presented as results;
 - no CI or infrastructure layer;
 - no Japan/China/US relabeling;
