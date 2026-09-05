@@ -1,24 +1,27 @@
 # Three-person coalition game
 
-> A source-anchored replication of Akiyama & Kaneko's iterated three-person coalition model, built slowly enough that every implemented mechanism can be traced to the original study.
+> A source-anchored reconstruction of Akiyama & Kaneko's iterated three-person coalition model, built from replication toward recombination and eventually invention.
 
 > **Study status:** Protocol  
 > **Standard:** Scientific Repository Standard v1.0.0  
-> **Current milestone:** M0 — source reconstruction  
-> **Primary claim:** Not yet evaluated  
-> **Reproduction:** Not yet available
+> **Research manifesto:** [`RESEARCH_MANIFESTO.md`](RESEARCH_MANIFESTO.md)  
+> **Current milestone:** M1 — deterministic stage game + state representation  
+> **Primary claim:** The one-round coalition payoff and state-indexing mechanism are reproduced; no evolutionary claim is yet evaluated  
+> **Reproduction:** `python -m unittest discover -s tests -v`
 
 ## Abstract
 
-This repository aims to faithfully reconstruct the artificial-life model introduced by Eizo Akiyama and Kunihiko Kaneko for studying the evolution of coalition structure, communication, cooperation, exploitation, and role differentiation in an iterated three-person game. The original model is deliberately minimal: three players repeatedly choose between two initially meaningless actions; a two-player subgroup can earn a payoff only by excluding the third player; finite-memory strategies evolve through selection and mutation. The reported simulations move through qualitatively different social regimes, including persistent class differentiation, temporal rotation of the excluded role, and later diversification of communication patterns.
+This repository reconstructs the artificial-life model introduced by Eizo Akiyama and Kunihiko Kaneko for studying the evolution of coalition structure, communication, cooperation, exploitation, and role differentiation in an iterated three-person game. The original model is deliberately minimal: three players repeatedly choose between two initially meaningless actions; a two-player subgroup can earn a payoff only by excluding the third player; finite-memory strategies evolve through population dynamics and mutation.
 
-The project begins with a **replication-first** objective. M0 contains no simulator and reports no findings. It reconstructs the paper's scientific contract, distinguishes source-supported mechanisms from numerical parameter choices, and fixes the source hierarchy that will govern later implementation. A geopolitical or international-relations interpretation is intentionally deferred until the original mechanism has been independently reproduced.
+The project follows a three-stage research ladder: **recreate → recombine → invent**. Stage 1 reconstructs the historical experiment, inferring missing implementation details and estimating missing numerical values when necessary while preserving the sourced mechanisms. Stage 2 will deliberately combine the reconstructed system with mechanisms from later published work. Stage 3 may introduce genuinely novel mechanisms or theory derived from what the earlier stages teach us.
+
+M1 is intentionally tiny. It implements only one deterministic round of the original game plus the source-defined binary state representation. It does not yet implement repeated interaction, strategy trees, species, mutation, or population evolution.
 
 ## 1. Research question
 
 **Primary replication question.**
 
-> Does a faithful reimplementation of Akiyama & Kaneko's deterministic three-person coalition model reproduce the reported emergence of class differentiation, temporal role differentiation, and later diversification of coalition/communication patterns?
+> Does a faithful reconstruction of Akiyama & Kaneko's three-person evolutionary game reproduce the reported emergence of class differentiation, temporal role differentiation, and later diversification of coalition/communication patterns?
 
 A later extension may ask whether the mechanism illuminates coalition formation and flexible alignment in decentralized international systems. That is **not** part of the current replication claim.
 
@@ -26,130 +29,164 @@ A later extension may ask whether the mechanism illuminates coalition formation 
 
 The model is unusually interesting for computational international relations because coalition structure is endogenous. With three actors, more than one coalition is possible; actors can be included or excluded, coalitions can change, and communication strategies can evolve in response to the strategic ecology.
 
-The attraction is not an analogy in which countries are relabeled artificial organisms. The scientific opportunity is narrower: first understand a minimal mechanism that generates changing coalition structures from decentralized strategic interaction, then test whether a carefully specified IR extension preserves or breaks that mechanism.
+The attraction is not an analogy in which countries are relabeled artificial organisms. The scientific opportunity is narrower and stronger: first understand a minimal mechanism that generates changing coalition structures from decentralized interaction, then test what happens when that mechanism is recombined with later ideas, and only after that consider genuinely new theoretical constructions.
 
-## 3. Contributions
+## 3. Research manifesto
 
-At the current **Protocol** stage, this repository makes only two contributions:
+This repository follows [`RESEARCH_MANIFESTO.md`](RESEARCH_MANIFESTO.md):
 
-1. **Replication protocol.** A source-to-model reconstruction of the original experiment that distinguishes mechanism fidelity from parameter uncertainty.
-2. **Artifact design.** A deliberately small executable-paper structure in which later code, experiments, evidence, and claims will remain traceable to the sources.
+1. **Stage 1 — Recreate.** Recover the original mechanism. Exact code if available; reconstruct implementation when the mechanism is described but code is unavailable; estimate or sweep numerical values when the mechanism is known but the historical value is missing.
+2. **Stage 2 — Recombine.** Add mechanisms from other cited experiments when doing so creates a meaningful new scientific question.
+3. **Stage 3 — Invent.** Introduce new concepts, mechanisms, or theories only after Stages 1 and 2 provide enough understanding to motivate them.
 
-There are no empirical or methodological novelty claims yet.
+The provenance vocabulary is: **Exact**, **Reconstructed**, **Estimated**, **Recombined**, **Novel**.
 
 ## 4. Primary sources
 
-The source hierarchy is fixed for the replication phase:
-
 1. **Journal/preprint specification** — Eizo Akiyama & Kunihiko Kaneko, *Evolution of Cooperation, Differentiation, Complexity, and Diversity in an Iterated Three-Person Game*, *Artificial Life* 2(3), 293–304 (1995). DOI: https://doi.org/10.1162/artl.1995.2.3.293. Public preprint: https://arxiv.org/abs/adap-org/9504002.
 2. **ALife V proceedings version** — Eizo Akiyama & Kunihiko Kaneko, *Evolution of Communication and Strategies in an Iterated Three-Person Game*, in *Artificial Life V: Proceedings of the Fifth International Workshop on the Synthesis and Simulation of Living Systems*.
-3. **Earlier BIES version** — cited by the ALife V paper as *Evolution of cooperation, differentiation, complexity, and diversity in an iterated three-person game*, BIES 1995, pp. 76–83. This source has not yet been independently inspected in this repository.
-4. **Contemporary Japanese detailed exposition** — *三人ゲームにおける協力の発生とその進化*, 物性研究 65-1 (1995-10), used in M0 to recover several explicit simulation parameter values.
+3. **Earlier BIES version** — cited by the ALife V paper as *Evolution of cooperation, differentiation, complexity, and diversity in an iterated three-person game*, BIES 1995, pp. 76–83.
+4. **Contemporary Japanese exposition** — *三人ゲームにおける協力の発生とその進化*, 物性研究 65-1 (1995-10), used to recover additional simulation parameters.
 
-Where sources differ, the discrepancy must be documented before implementation changes.
+See [`REPLICATION_PROTOCOL.md`](REPLICATION_PROTOCOL.md) for the source-to-model contract.
 
 ## 5. Research objectives
 
-**Table 1 — Replication objectives and decision rules**
-
 | ID | Objective | Operational test | Decision rule |
 |:---|:---|:---|:---|
-| R1 | Reconstruct the stage game exactly | Exhaustive enumeration of all 8 action profiles | Every payoff matches the source-defined coalition rule |
-| R2 | Reconstruct finite-history strategy semantics | Hand-worked trajectories from source examples | State/history/action transitions agree exactly |
-| R3 | Reconstruct evolutionary population dynamics | Source-derived mechanisms plus explicit parameterization | No source mechanism is omitted; source values are used when recovered, while uncertain values remain explicit tunable parameters |
+| R1 | Reconstruct the stage game exactly | Exhaustive enumeration of all 8 profiles | Every payoff and state index matches the source contract |
+| R2 | Reconstruct finite-history strategy semantics | Hand-worked source trajectories | State/history/action transitions agree |
+| R3 | Reconstruct evolutionary population dynamics | Source mechanisms plus explicit reconstruction choices | No documented mechanism is omitted |
 | R4 | Reproduce reported qualitative regimes | Frozen multi-run replication | Evidence supports, fails to support, or leaves each regime unresolved |
-| R5 | Separate replication from IR extension | Release boundary before any geopolitical remapping | No IR-specific variable enters the faithful replication |
+| R5 | Separate historical replication from later extensions | Explicit Stage 1/2/3 boundaries | Recombined and novel mechanisms are labeled as such |
 
 ## 6. Method
 
-The original system contains four conceptual layers:
+The historical model contains four layers:
 
-1. **Stage game** — three players choose action `0` or `1`.
-2. **Interaction** — the stage game is repeated; strategies condition actions on finite histories of prior three-player states.
-3. **Ecology** — players sharing a strategy form a species; species receive scores from interactions with other strategy combinations.
-4. **Evolution** — population shares change with relative score and strategies mutate.
+1. **Stage game** — three players choose `0` or `1`.
+2. **Interaction** — the game is repeated; finite-memory strategies condition actions on prior three-player states.
+3. **Ecology** — players with the same strategy form species and receive scores from interactions.
+4. **Evolution** — population shares change with relative score; species go extinct and strategies mutate.
 
-The replication rule is strict about **mechanisms**, not dogmatic about numerical constants. A mechanism documented by the source must be implemented even when its exact historical parameter value is unknown. When a value is source-recovered, it becomes the historical baseline; when it is not, the implementation uses an explicitly labeled reconstruction value and later tests sensitivity to that choice. Missing a number is never a reason to delete the mechanism.
+### 6.1 M1 implementation
 
-M0 does not yet implement these layers. See [`REPLICATION_PROTOCOL.md`](REPLICATION_PROTOCOL.md).
+M1 implements only the first layer.
 
-## 7. Evidence protocol
+For a focal player, the three actions are ordered `(left, right, self)`. The source defines the eight round states as the binary representation of those actions, hence
 
-The replication will follow this order:
+\[
+\text{state} = 4L + 2R + S.
+\]
 
-1. source reconstruction;
-2. deterministic game checks;
-3. deterministic strategy checks;
-4. evolutionary-mechanism reconstruction;
-5. minimal exploratory calibration and parameter sensitivity where needed;
-6. frozen replication runs;
-7. robustness analysis;
-8. only then, a separately labeled IR extension.
+If exactly two players choose the same action, the matching pair receives `(3,3)` and the excluded player receives `0`. If all three choose the same action, all receive `0`.
 
-Exploratory observations will not be promoted into confirmatory findings.
+**M1 provenance:**
+
+| Component | Status |
+|:---|:---|
+| Two symmetric actions `{0,1}` | **Exact** |
+| Coalition payoff rule | **Exact** |
+| `(left,right,self)` relational ordering | **Exact** |
+| Binary state index `4L + 2R + S` | **Exact** |
+| Python implementation | New reconstruction artifact implementing the exact mechanism |
+
+## 7. M1 validation
+
+The implementation is protected by six focused tests rather than broad infrastructure. They establish:
+
+- all eight source-defined payoff profiles;
+- the source indexing example `011₂ → state 3` and the rotated perspective `101₂ → state 5`;
+- binary-label symmetry;
+- player-renaming symmetry;
+- total payoff `6` for non-unanimous profiles and `0` for unanimous profiles;
+- rejection of non-binary actions.
+
+Reproduce locally with:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+The current M1 test suite passes all six tests.
 
 ## 8. Results
 
-No results are reported at M0.
+### 8.1 M1 implementation result
 
-The repository contains no simulator, no experiment run, and no evidence bundle yet.
+The deterministic one-round model now reproduces the complete eight-profile payoff table and the source-defined binary state representation.
+
+This is an **implementation-validation result**, not evidence about the evolutionary claims of the original paper.
+
+### 8.2 Evolutionary results
+
+No repeated-game or evolutionary result is reported yet.
+
+Class differentiation, temporal differentiation, period-`3n` societies, regime replacement, and later diversification remain future replication targets.
 
 ## 9. Interpretation
 
-The model is promising for later IR work because it allows coalition structure and role allocation to emerge rather than prescribing a permanent alliance pattern. That observation motivates the project but is not itself an empirical result about international politics.
+M1 establishes the smallest trustworthy building block of the experiment. A state is not merely a payoff outcome: it is a **relationally indexed observation from one actor's perspective**, preserving which other actor is left and which is right. That distinction later matters because the authors report that removing left/right information prevents temporal role differentiation.
+
+No claim about international politics follows from M1.
 
 ## 10. Limitations and threats to validity
 
-The immediate replication risks concern exact executable semantics more than the existence of the model's mechanisms. Several details still require reconstruction, including state indexing, strategy-tree matching, tournament weighting, and exact mutation operator semantics.
+The remaining reconstruction risks lie downstream of the stage game: exact finite-history tree semantics, initial-hand encoding, tournament weighting, mutation operator details, random-tree initialization, and later regime classification.
 
-Two parameter values that were initially unresolved from the ALife V proceedings have now been recovered from a contemporary Japanese exposition of the model: **growth constant `d = 0.2`** and **`KillLimit = 0.2`**. The same source also reports `max-round = 1000`, `MaxMemoryLength = 4`, maximum species count `9`, and mutation-related settings `PointAdd = 0.1`, `PointRemove = 0.1`, `Dupli = 0.001`, and `RemoveRecursively = 0.001`. These are historical baseline values, not sacred constants: robustness experiments should deliberately vary them after faithful baseline reproduction.
+Several important numerical values have already been recovered, including `d = 0.2`, `KillLimit = 0.2`, maximum interaction length `1000`, maximum memory `4`, maximum species count `9`, and named mutation settings. Missing numerical values will not cause mechanisms to be omitted; they will become explicit **Estimated** parameters and sensitivity experiments if necessary.
 
-A second risk is conceptual overreach. Even a successful replication would establish behavior of this artificial ecology, not a validated model of states, alliances, or geopolitics.
+A successful historical replication would establish behavior of this artificial ecology, not validate a model of real states or alliances.
 
 ## 11. Reproduction
 
-Not yet available. M0 deliberately contains no executable model.
+No external dependency is required for M1.
+
+```bash
+git clone https://github.com/ReloadLightly/three-person-coalition-game.git
+cd three-person-coalition-game
+python -m unittest discover -s tests -v
+```
 
 ## 12. Repository map
 
 | Path | Scientific role |
 |:---|:---|
-| `README.md` | Compact paper and current scientific status |
-| `REPLICATION_PROTOCOL.md` | Source-to-model contract, parameter provenance, ambiguity ledger, and milestone gates |
-| `SCIENTIFIC_REPOSITORY_STANDARD.md` | Pinned governing standard for repository development |
-
-No empty implementation directories are created at M0.
+| `README.md` | Compact paper and current study status |
+| `RESEARCH_MANIFESTO.md` | Portfolio research ladder: recreate → recombine → invent |
+| `REPLICATION_PROTOCOL.md` | Source-to-model contract, provenance, historical parameters, unresolved reconstruction details |
+| `three_person_coalition_game/game.py` | M1 executable stage-game mechanism |
+| `tests/test_game.py` | M1 source examples and scientific invariants |
+| `SCIENTIFIC_REPOSITORY_STANDARD.md` | Governing repository standard |
 
 ## 13. Citation
 
-The scientific model being replicated should be cited to the original authors:
-
 Akiyama, E., & Kaneko, K. (1995). *Evolution of Cooperation, Differentiation, Complexity, and Diversity in an Iterated Three-Person Game*. Artificial Life, 2(3), 293–304. https://doi.org/10.1162/artl.1995.2.3.293
 
-A project-specific `CITATION.cff` will be added when the repository has a citable implementation or release.
+A project-specific `CITATION.cff` will be added when the repository has a citable replication release.
 
 ## 14. License and responsible use
 
-A repository license has not yet been selected at M0. No downstream deployment or policy claim is supported by the current artifact.
+A repository license has not yet been selected. No downstream deployment or policy claim is supported by the current artifact.
 
 ---
 
-## Current milestone: M0
+## Current milestone: M1
 
-M0 is complete when the source hierarchy, formal model skeleton, known parameters, explicitly reconstructable parameters, replication targets, and M1 boundary are inspectable and internally consistent.
+**M1 is complete at the implementation level:** the deterministic stage game and state representation are implemented and validated.
 
-### Explicit non-goals for M0
+### Explicit non-goals retained at M1
 
-- no Python package;
-- no simulator;
-- no evolutionary loop;
-- no figures presented as results;
-- no CI or infrastructure layer;
-- no Japan/China/US relabeling;
-- no claim that the model already explains international relations.
+- no repeated interactions;
+- no strategy-tree implementation;
+- no species ecology;
+- no mutation;
+- no population evolution;
+- no result plots;
+- no geopolitical relabeling.
 
 ### Next milestone
 
-**M1 will implement only the deterministic three-person stage game and its state representation.**
+**M2 — finite-history strategies.**
 
-If M1 cannot be explained line by line from the source contract, it is not ready to merge.
+Before writing that code, we will reconstruct the strategy-tree matching semantics and initial-action encoding from the source evidence. We will infer executable details where the mechanism is clear rather than freezing the project over unavailable historical code.
