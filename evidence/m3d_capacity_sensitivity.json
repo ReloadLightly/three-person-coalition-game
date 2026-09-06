@@ -1,0 +1,34 @@
+{
+  "artifact": "m3d_capacity_sensitivity",
+  "status": "exploratory_sensitivity",
+  "claim_boundary": "Matched seed-pair trajectories compare the historical maximum species value 9 with larger-cap sensitivity variants 12 and 18 under the same reconstructed bookkeeping. This diagnoses capacity sensitivity; it does not identify the lost historical at-cap implementation or test historical regime replication.",
+  "source_finding": "The 1995 Japanese exposition explicitly sets maximum species to 9, says larger maximum species should increase strategy variation, and says the value was kept small because three-person matchups become computationally expensive. The inspected source does not specify what the original code did when a novel mutant was proposed while all species slots were occupied.",
+  "configuration": {
+    "generations": 25,
+    "seed_pairs": [[7, 11], [17, 23], [29, 31]],
+    "rounds_per_seating": 1000,
+    "two_seatings_per_matchup": true,
+    "max_species_values": [9, 12, 18],
+    "growth_constant": 0.2,
+    "kill_limit": 0.2,
+    "mutant_share": 0.1
+  },
+  "controlled_reconstructed_choices": {
+    "initial_root_branch_probability": 0.5,
+    "initial_action_probability": 0.5,
+    "mutation_scheduler": "one_local_mutation_pass_per_surviving_species",
+    "at_cap_behavior": "block_novel_mutant_when_full",
+    "multi_operator_order": ["PointAdd", "PointRemove", "Dupli", "RemoveRecursively"]
+  },
+  "runs": [
+    {"max_species": 9, "initial_seed": 7, "mutation_seed": 11, "species_cap_first_reached_generation": 4, "total_extinctions": 12, "mutation_outcome_totals": {"unchanged": 4, "new": 15, "merged": 0, "blocked_at_cap": 184}, "final_mean_score": 1.5141152930159798, "final_dominant_frequency": 0.3118265003967224, "final_max_memory_depth": 2, "unique_cached_matchups": 1989, "final_species_count": 9},
+    {"max_species": 9, "initial_seed": 17, "mutation_seed": 23, "species_cap_first_reached_generation": 3, "total_extinctions": 4, "mutation_outcome_totals": {"unchanged": 16, "new": 7, "merged": 2, "blocked_at_cap": 187}, "final_mean_score": 0.0, "final_dominant_frequency": 0.3715113935050005, "final_max_memory_depth": 3, "unique_cached_matchups": 937, "final_species_count": 9},
+    {"max_species": 9, "initial_seed": 29, "mutation_seed": 31, "species_cap_first_reached_generation": 4, "total_extinctions": 36, "mutation_outcome_totals": {"unchanged": 1, "new": 39, "merged": 0, "blocked_at_cap": 133}, "final_mean_score": 0.8209271771136395, "final_dominant_frequency": 0.4347777197039352, "final_max_memory_depth": 3, "unique_cached_matchups": 5511, "final_species_count": 9},
+    {"max_species": 12, "initial_seed": 7, "mutation_seed": 11, "species_cap_first_reached_generation": 4, "total_extinctions": 39, "mutation_outcome_totals": {"unchanged": 0, "new": 43, "merged": 0, "blocked_at_cap": 196}, "final_mean_score": 0.6993229497358446, "final_dominant_frequency": 0.5069585171365886, "final_max_memory_depth": 4, "unique_cached_matchups": 9980, "final_species_count": 10},
+    {"max_species": 12, "initial_seed": 17, "mutation_seed": 23, "species_cap_first_reached_generation": 3, "total_extinctions": 4, "mutation_outcome_totals": {"unchanged": 19, "new": 10, "merged": 2, "blocked_at_cap": 247}, "final_mean_score": 0.0, "final_dominant_frequency": 0.35748860649499953, "final_max_memory_depth": 3, "unique_cached_matchups": 1936, "final_species_count": 12},
+    {"max_species": 12, "initial_seed": 29, "mutation_seed": 31, "species_cap_first_reached_generation": 5, "total_extinctions": 35, "mutation_outcome_totals": {"unchanged": 1, "new": 41, "merged": 0, "blocked_at_cap": 199}, "final_mean_score": 1.0326205707452993, "final_dominant_frequency": 0.39194798695473926, "final_max_memory_depth": 3, "unique_cached_matchups": 9197, "final_species_count": 12},
+    {"max_species": 18, "initial_seed": 7, "mutation_seed": 11, "species_cap_first_reached_generation": 5, "total_extinctions": 56, "mutation_outcome_totals": {"unchanged": 0, "new": 68, "merged": 0, "blocked_at_cap": 268}, "final_mean_score": 0.7261545602012383, "final_dominant_frequency": 0.431851073100122, "final_max_memory_depth": 4, "unique_cached_matchups": 30947, "final_species_count": 18},
+    {"max_species": 18, "initial_seed": 17, "mutation_seed": 23, "species_cap_first_reached_generation": 7, "total_extinctions": 71, "mutation_outcome_totals": {"unchanged": 4, "new": 83, "merged": 0, "blocked_at_cap": 226}, "final_mean_score": 1.1610898972565105, "final_dominant_frequency": 0.4028845621195326, "final_max_memory_depth": 4, "unique_cached_matchups": 46015, "final_species_count": 18},
+    {"max_species": 18, "initial_seed": 29, "mutation_seed": 31, "species_cap_first_reached_generation": 6, "total_extinctions": 69, "mutation_outcome_totals": {"unchanged": 3, "new": 81, "merged": 0, "blocked_at_cap": 234}, "final_mean_score": 1.3882330316354738, "final_dominant_frequency": 0.2868894693732097, "final_max_memory_depth": 3, "unique_cached_matchups": 42459, "final_species_count": 18}
+  ]
+}
