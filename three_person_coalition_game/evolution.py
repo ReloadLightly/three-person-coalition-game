@@ -1,16 +1,10 @@
-"""M3b one-generation integration for the historical coalition ecology.
+"""Generation integration for the historical three-person coalition ecology.
 
-The source now fixes several generation-level mechanisms that were absent from M3a:
-
-* six random memory-1 starting species with equal population ``1/6``;
-* mutant offspring receive 10% of the parent's post-selection population;
-* the parent loses the same 10%;
-* normalization occurs after growth/extinction and mutation transfer;
-* maximum species count is 9.
-
-The exact historical random generator, mutation-bookkeeping scheduler, and behavior
-when a novel mutant is proposed at the nine-species cap are not fully preserved in
-the inspected sources. Those low-level choices are explicitly labeled Reconstructed.
+Source-anchored generation-level mechanisms include six random memory-1 starting
+species with equal population, relative-fitness selection/extinction, four local tree
+mutations, 10% parent-to-mutant transfer, normalization after mutation, and a maximum
+of nine species. Low-level choices not preserved in the sources remain explicitly
+Reconstructed.
 """
 
 from dataclasses import dataclass
@@ -23,6 +17,7 @@ from .ecology import (
     HISTORICAL_GROWTH_CONSTANT,
     HISTORICAL_KILL_LIMIT,
     HISTORICAL_ROUNDS,
+    PayoffCache,
     selection_step,
     species_scores,
 )
@@ -32,10 +27,6 @@ HISTORICAL_INITIAL_SPECIES = 6
 HISTORICAL_MAX_SPECIES = 9
 HISTORICAL_MUTANT_SHARE = 0.10
 
-# Source: the starting trees are random and memory-1. Generation-0 branch statistics
-# imply an average of half of the 4096 expanded paths, strongly supporting p=0.5 for
-# each of the eight root-state decisions. The original PRNG and first-action sampling
-# are unavailable, so both Bernoulli choices remain explicit Reconstructed details.
 RECONSTRUCTED_INITIAL_BRANCH_PROBABILITY = 0.5
 RECONSTRUCTED_INITIAL_ACTION_PROBABILITY = 0.5
 RECONSTRUCTED_CAP_RULE = "block_novel_mutant_when_full"
@@ -68,7 +59,7 @@ class MutationEvent:
 
     parent_index: int
     mutant: Chromosome
-    outcome: str  # unchanged | new | merged | blocked_at_cap
+    outcome: str
     recipient_index: int | None = None
 
 
@@ -154,22 +145,13 @@ def generation_step(
     kill_limit: float = HISTORICAL_KILL_LIMIT,
     max_species: int = HISTORICAL_MAX_SPECIES,
     mutant_share: float = HISTORICAL_MUTANT_SHARE,
+    payoff_cache: PayoffCache | None = None,
 ) -> GenerationAudit:
     """Execute one historical-style generation and return its complete audit.
 
-    Sequence supported by the detailed source:
-
-    1. play the population and calculate species scores;
-    2. apply relative-fitness growth and extinction;
-    3. generate mutants and transfer 10% of each mutated parent's population;
-    4. normalize total population to 1.
-
-    Reconstructed bookkeeping choices are intentionally narrow: every surviving
-    species receives one local chromosome-mutation pass; identical mutants merge
-    because identical strategies define one species; a novel mutant is not inserted
-    if the historical nine-species capacity is already full. Mutation proposals and
-    transfer amounts are computed from a post-selection snapshot so species order
-    does not change the 10% amount.
+    ``payoff_cache`` is an optional exact acceleration for multi-generation runs:
+    deterministic matchup payoffs depend on strategies, not population frequencies,
+    so previously evaluated triples can be reused without changing the experiment.
     """
 
     if max_species < 1:
@@ -182,6 +164,7 @@ def generation_step(
         strategies,
         population.frequencies,
         rounds=rounds,
+        payoff_cache=payoff_cache,
     )
     selection = selection_step(
         population.frequencies,
@@ -212,9 +195,7 @@ def generation_step(
     for parent_index, mutant in enumerate(proposals):
         parent = survivors[parent_index]
         if mutant == parent:
-            events.append(
-                MutationEvent(parent_index, mutant, "unchanged", parent_index)
-            )
+            events.append(MutationEvent(parent_index, mutant, "unchanged", parent_index))
             continue
 
         transfer = base_masses[parent_index] * mutant_share
@@ -222,21 +203,15 @@ def generation_step(
             recipient = survivors.index(mutant)
             masses[parent_index] -= transfer
             masses[recipient] += transfer
-            events.append(
-                MutationEvent(parent_index, mutant, "merged", recipient)
-            )
+            events.append(MutationEvent(parent_index, mutant, "merged", recipient))
         elif len(survivors) < max_species:
             masses[parent_index] -= transfer
             survivors.append(mutant)
             masses.append(transfer)
             recipient = len(survivors) - 1
-            events.append(
-                MutationEvent(parent_index, mutant, "new", recipient)
-            )
+            events.append(MutationEvent(parent_index, mutant, "new", recipient))
         else:
-            events.append(
-                MutationEvent(parent_index, mutant, "blocked_at_cap", None)
-            )
+            events.append(MutationEvent(parent_index, mutant, "blocked_at_cap", None))
 
     after = _normalize(survivors, masses)
     return GenerationAudit(
