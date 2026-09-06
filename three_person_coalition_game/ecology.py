@@ -1,15 +1,15 @@
 """Historical population ecology for the three-person coalition model.
 
-This module implements the source-recovered M3 mechanisms only:
+This module implements the source-recovered ecological mechanisms:
 
-* ordered species-triple interaction payoff ``g_ijk``;
+* two positional seatings for each three-player matchup;
 * population-weighted species scores ``s_i``;
 * population mean and relative fitness;
 * replicator-like growth with historical baseline ``d = 0.2``;
 * extinction of below-average species below ``KillLimit = 0.2``.
 
-Species birth from mutation and random historical initialization are intentionally not
-implemented here yet; they remain the next bounded reconstruction step.
+M3b exposes the pre-normalization selection step because the historical source
+places mutation after growth/extinction and normalizes only after mutation transfer.
 """
 
 from dataclasses import dataclass
@@ -39,25 +39,51 @@ def _validate_frequencies(frequencies: Sequence[float]) -> tuple[float, ...]:
     return values
 
 
+def historical_focal_payoff(
+    focal: Strategy,
+    left: Strategy,
+    right: Strategy,
+    rounds: int = HISTORICAL_ROUNDS,
+) -> float:
+    """Return focal average payoff across the two historical partner seatings.
+
+    Akiyama's detailed description says that a trio first plays ``max-round`` in
+    one positional order, then two players exchange places and the trio plays
+    ``max-round`` again. Histories restart between the two interactions.
+    """
+
+    if rounds <= 0:
+        raise ValueError("rounds must be positive")
+
+    first = play_interaction((focal, left, right), rounds=rounds)
+    second = play_interaction((focal, right, left), rounds=rounds)
+    focal_total = sum(record.payoffs[0] for record in first) + sum(
+        record.payoffs[0] for record in second
+    )
+    return focal_total / (2 * rounds)
+
+
 def ordered_focal_payoff(
     focal: Strategy,
     left: Strategy,
     right: Strategy,
     rounds: int = HISTORICAL_ROUNDS,
 ) -> float:
-    """Return ``g_ijk``: focal average payoff per round for an ordered triple."""
+    """Compatibility name for the historical two-seating focal payoff."""
 
-    if rounds <= 0:
-        raise ValueError("rounds must be positive")
-    records = play_interaction((focal, left, right), rounds=rounds)
-    return sum(record.payoffs[0] for record in records) / rounds
+    return historical_focal_payoff(focal, left, right, rounds=rounds)
 
 
 def fitness_tensor(
     strategies: Sequence[Strategy],
     rounds: int = HISTORICAL_ROUNDS,
 ) -> FitnessTensor:
-    """Evaluate every ordered focal/left/right species triple, including self-play."""
+    """Evaluate every focal/left/right species triple, including self-play.
+
+    Entries retain the ordered ``(i,j,k)`` indexing used by the ecological score,
+    while each matchup itself is averaged over the source-required swap of the two
+    partner positions.
+    """
 
     if not strategies:
         raise ValueError("at least one strategy is required")
@@ -68,7 +94,7 @@ def fitness_tensor(
     for i, focal in enumerate(strategies):
         for j, left in enumerate(strategies):
             for k, right in enumerate(strategies):
-                tensor[(i, j, k)] = ordered_focal_payoff(
+                tensor[(i, j, k)] = historical_focal_payoff(
                     focal,
                     left,
                     right,
@@ -110,8 +136,8 @@ def species_scores(
 
 
 @dataclass(frozen=True)
-class PopulationUpdate:
-    """One transparent population-selection step, before mutant species are added."""
+class SelectionStep:
+    """Growth/extinction result before the source's final normalization."""
 
     frequencies: tuple[float, ...]
     mean_score: float
@@ -119,18 +145,27 @@ class PopulationUpdate:
     extinct: tuple[int, ...]
 
 
-def update_population(
+@dataclass(frozen=True)
+class PopulationUpdate:
+    """Backward-compatible normalized population-selection result."""
+
+    frequencies: tuple[float, ...]
+    mean_score: float
+    fitness: tuple[float, ...]
+    extinct: tuple[int, ...]
+
+
+def selection_step(
     frequencies: Sequence[float],
     scores: Sequence[float],
     growth_constant: float = HISTORICAL_GROWTH_CONSTANT,
     kill_limit: float = HISTORICAL_KILL_LIMIT,
-) -> PopulationUpdate:
-    """Apply relative-fitness growth, extinction, and normalization.
+) -> SelectionStep:
+    """Apply relative-fitness growth and extinction without normalizing.
 
-    The source states that a below-average species is removed when its population
-    falls below ``KillLimit``. This implementation evaluates that condition after
-    the source-defined growth step and before final survivor normalization. That
-    timing is an explicit reconstruction detail, not a new causal mechanism.
+    The source describes growth, extinction, then mutation, and only after those
+    operations normalization to total population 1. M3b therefore exposes the
+    intermediate unnormalized masses required for faithful generation ordering.
     """
 
     weights = _validate_frequencies(frequencies)
@@ -143,7 +178,12 @@ def update_population(
         raise ValueError("kill_limit must lie in [0, 1]")
 
     mean_score = sum(weight * score for weight, score in zip(weights, values))
-    fitness = tuple(score - mean_score for score in values)
+    fitness = tuple(
+        0.0
+        if isclose(score, mean_score, rel_tol=1e-12, abs_tol=1e-12)
+        else score - mean_score
+        for score in values
+    )
     grown = tuple(
         weight + growth_constant * relative * weight
         for weight, relative in zip(weights, fitness)
@@ -161,14 +201,36 @@ def update_population(
         0.0 if index in extinct else max(0.0, grown_frequency)
         for index, grown_frequency in enumerate(grown)
     )
-    total = sum(surviving)
-    if total <= 0.0:
+    if sum(surviving) <= 0.0:
         raise ValueError("population update eliminated every species")
 
-    normalized = tuple(value / total for value in surviving)
-    return PopulationUpdate(
-        frequencies=normalized,
+    return SelectionStep(
+        frequencies=surviving,
         mean_score=mean_score,
         fitness=fitness,
         extinct=extinct,
+    )
+
+
+def update_population(
+    frequencies: Sequence[float],
+    scores: Sequence[float],
+    growth_constant: float = HISTORICAL_GROWTH_CONSTANT,
+    kill_limit: float = HISTORICAL_KILL_LIMIT,
+) -> PopulationUpdate:
+    """Apply selection/extinction and normalize, preserving the M3a API."""
+
+    step = selection_step(
+        frequencies,
+        scores,
+        growth_constant=growth_constant,
+        kill_limit=kill_limit,
+    )
+    total = sum(step.frequencies)
+    normalized = tuple(value / total for value in step.frequencies)
+    return PopulationUpdate(
+        frequencies=normalized,
+        mean_score=step.mean_score,
+        fitness=step.fitness,
+        extinct=step.extinct,
     )

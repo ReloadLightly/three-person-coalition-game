@@ -2,122 +2,105 @@
 
 **Reconstructing Akiyama & Kaneko's artificial-life ecology, one source-anchored mechanism at a time.**
 
-[Method](#6-method) · [Evidence](#8-results) · [Reproduce](#11-reproduction) · [Research manifesto](RESEARCH_MANIFESTO.md)
+[Method](#6-method) · [Experiment](#7-experimental-design) · [Evidence](#8-results) · [Reproduce](#11-reproduction) · [Research manifesto](RESEARCH_MANIFESTO.md)
 
 **Table 1 — Study at a glance**
 
 | Field | Current state |
 |:---|:---|
-| Study status | **Protocol** — implementation validation |
-| Milestone | **M3a** — evolutionary core implemented; full generation loop pending |
-| Supported claim | Core mechanisms are executable; historical evolutionary outcomes are **not yet reproduced** |
-| Verification command | `python -m unittest discover -s tests -v` |
-
-*Reading:* This is a reconstruction in progress, not a completed replication. The banner illustrates the game rule; it is not a simulation result.
+| Study status | **Implementation validation / exploratory evidence** |
+| Milestone | **M3b** — one full generation now executes end-to-end |
+| Supported claim | One source-anchored generation runs from interaction through mutant birth; historical long-run regimes are **not yet reproduced** |
+| Verification | `python -m unittest discover -s tests -v` |
+| Bounded experiment | `python -m experiments.m3b_one_generation` |
 
 ## Abstract
 
-This repository reconstructs the artificial-life model developed by Eizo Akiyama and Kunihiko Kaneko to study coalition structure, communication, exploitation, cooperation, and role differentiation in an iterated three-person game. Three players repeatedly choose between two symmetric actions. When exactly two actions match, those players receive a payoff and the third receives none. Strategies use finite histories of relational states and are represented by an 8-ary chromosome. Strategy classes form species; their scores depend on the current population, while selection, extinction, and mutation change the ecology.
+This repository reconstructs the artificial-life model developed by Eizo Akiyama and Kunihiko Kaneko to study coalition structure, communication, exploitation, cooperation, and role differentiation in an iterated three-person game. Three players repeatedly choose between two symmetric actions. When exactly two actions match, those players receive a payoff and the third receives none. Strategies use finite histories of relational states and are encoded by an 8-ary chromosome. Strategy classes form species whose population shares change through ecological fitness, extinction, and mutation.
 
-The current implementation includes the stage game, finite-history decisions, synchronous repeated interactions, ordered ecological fitness, selection/extinction, and four tree-mutation operators. These components have focused validation tests, but the historical evolutionary experiment has not been rerun. Initialization and mutant-species insertion/turnover remain the next implementation step.
+M1–M3a reconstructed the stage game, finite-history strategy, repeated interaction, explicit chromosome, ecological fitness, relative selection, extinction, and four historical mutation operators. **M3b now closes the generation loop:** each matchup is evaluated in both source-required partner seatings; six random memory-1 species begin at equal population `1/6`; surviving species generate mutant proposals; an admitted mutant receives exactly 10% of its parent's population; and normalization occurs after mutation.
 
-The research follows **recreate → recombine → invent**: preserve sourced mechanisms, reconstruct unavailable implementation details transparently, and distinguish later extensions from historical replication. A future international-relations application motivates the project but is not a claim established by the present artifact.
+The first evolutionary experiment deliberately runs **one generation only**. It is evidence that the causal pipeline executes, not evidence that the reported transitions to class differentiation, temporal differentiation, or later diversity have already been replicated.
 
 ## 1. Research question
 
 **Does a faithful reconstruction reproduce the reported transition from class differentiation to temporal role differentiation and, later, diversified coalition/communication regimes?**
 
-The immediate question is narrower: can the mechanisms needed for that experiment be reconstructed and checked without replacing them with unrelated machinery?
+The current question is narrower: does one historically grounded generation transition execute correctly enough that we can now justify a short exploratory evolutionary trajectory?
 
 ## 2. Why this matters
 
-Coalition membership is an outcome of interaction rather than a fixed alliance imposed at initialization. The same minimal game therefore provides a setting for investigating exclusion, changing partners, and the coordination of roles.
+The model is unusually attractive for artificial-life approaches to international relations because **coalition structure is endogenous**. Coalition membership, exclusion, role allocation, and communication emerge from decentralized interaction rather than being hard-coded as a permanent alliance graph.
 
-This motivates a possible computational-IR extension, not a direct identification of players with countries. We first reconstruct the artificial ecology, then examine whether mechanisms from other research can be meaningfully recombined with it. See the [research manifesto](RESEARCH_MANIFESTO.md).
+The scientific route is therefore deliberately staged: first recreate the artificial ecology, then recombine it with later sourced mechanisms, and only afterward consider a genuinely new computational-IR model.
 
-## 3. Contributions
+## 3. Contributions at the current stage
 
-The present contributions are a **source-to-model reconstruction** and a **small executable method**. The protocol distinguishes recovered rules from inferred implementation choices; the code implements the M1–M3a components with tests tied to their scientific invariants.
+1. **Source reconstruction.** Original papers, a detailed Japanese exposition, and Akiyama's thesis are translated into an executable mechanism with provenance labels.
+2. **Complete one-generation causal chain.** Interaction → ecological fitness → growth/extinction → mutation birth → normalization now runs end-to-end.
+3. **Explicit uncertainty.** Historical facts and reconstructed bookkeeping choices remain visibly distinct.
+4. **Executable-paper structure.** Question, method, evidence, interpretation, limits, and reproduction are kept in one scientific artifact.
 
-There is no new evolutionary finding or validated geopolitical theory at this stage.
+## 4. Primary sources
 
-## 4. Related work and primary sources
+- **Akiyama & Kaneko (1995)** — *Evolution of Cooperation, Differentiation, Complexity, and Diversity in an Iterated Three-Person Game*, *Artificial Life* 2(3), 293–304.
+- **Akiyama & Kaneko (Artificial Life V)** — *Evolution of Communication and Strategies in an Iterated Three-Person Game*.
+- **Akiyama (1995)** — *三人ゲームにおける協力の発生とその進化*, the detailed contemporary Japanese exposition used for repeated-game order, initialization, mutation transfer, and historical parameters.
+- **Akiyama (1998)** — doctoral thesis, especially the chapter describing the dynamic three-person game, population fitness, and mutation operators.
 
-The source record comprises Akiyama & Kaneko's *Evolution of Cooperation, Differentiation, Complexity, and Diversity in an Iterated Three-Person Game* (*Artificial Life*, 1995); their *Evolution of Communication and Strategies in an Iterated Three-Person Game* (*Artificial Life V*); Akiyama's 1995 Japanese exposition, *三人ゲームにおける協力の発生とその進化*; and his 1998 doctoral thesis.
-
-The [replication protocol](REPLICATION_PROTOCOL.md) records how these sources inform the model. The [M3 source reconstruction](M3_SOURCE_RECONSTRUCTION.md) records the fitness and mutation reconstruction that preceded M3a. **Exact**, **Reconstructed**, and **Estimated** describe Stage-1 provenance; **Recombined** and **Novel** are reserved for later research stages.
+See [REPLICATION_PROTOCOL.md](REPLICATION_PROTOCOL.md), [M3_SOURCE_RECONSTRUCTION.md](M3_SOURCE_RECONSTRUCTION.md), and [M3B_SOURCE_RECONSTRUCTION.md](M3B_SOURCE_RECONSTRUCTION.md).
 
 ## 5. Research objectives
 
-**Table 2 — Objectives and evidence required**
+**Table 2 — Replication objectives**
 
-| ID | Objective | Validation target | Status |
+| ID | Objective | Operational test | Current status |
 |:---|:---|:---|:---|
-| R1 | Recover the stage game | All eight profiles and relational state indices | Implemented |
-| R2 | Recover history-dependent decisions | Source examples and deterministic interactions | Implemented |
-| R3 | Recover evolutionary machinery | Ordered fitness, selection/extinction, tree mutation | Core implemented; turnover pending |
-| R4 | Reproduce reported regimes | Frozen multi-seed experiment | Not run |
-| R5 | Separate replication from extensions | Explicit provenance and stage boundaries | Ongoing |
-
-*Reading:* Implementation of R1–R3 does not establish the evolutionary outcomes in R4.
+| R1 | Reconstruct stage game | Exhaust all 8 action profiles | **Implemented** |
+| R2 | Reconstruct finite-history strategy | Source examples + deterministic trajectories | **Implemented** |
+| R3 | Reconstruct evolutionary population dynamics | Source equations + mutation + species turnover | **One generation implemented** |
+| R4 | Reproduce historical evolutionary regimes | Frozen multi-seed experiment | Not yet run |
+| R5 | Separate replication from later extension | Explicit Stage 1/2/3 provenance | Active |
 
 ## 6. Method
 
 ```mermaid
 flowchart LR
-    A["Finite-history<br/>strategies"] --> B["Repeated<br/>three-player games"]
-    B --> C["Ordered<br/>ecological fitness"]
-    C --> D["Selection and<br/>extinction"]
-    A --> E["Four tree<br/>mutations"]
-    D -.-> F["Species turnover<br/>M3b: pending"]
-    E -.-> F
-    F -.-> A
-    classDef core fill:#FFFFFF,stroke:#475569,color:#111827,stroke-width:1px;
-    classDef pending fill:#FFFFFF,stroke:#0072B2,color:#0072B2,stroke-width:1px,stroke-dasharray:5 4;
-    class A,B,C,D,E core;
-    class F pending;
+    A["Stage game<br/>0 / 1"] --> B["Relational state<br/>4L + 2R + S"]
+    B --> C["Finite-history strategy<br/>8-ary chromosome"]
+    C --> D["Two seatings per trio<br/>A,B,C ↔ A,C,B"]
+    D --> E["Ecological fitness<br/>gᵢⱼₖ → sᵢ"]
+    E --> F["Growth + extinction<br/>d, KillLimit"]
+    F --> G["Tree mutation<br/>4 operators"]
+    G --> H["Mutant birth<br/>10% parent mass"]
+    H --> I["Normalize<br/>next generation"]
 ```
 
-*Figure 1 — Components of the reconstructed ecology.* Solid links connect implemented components. Dashed links mark the pending integration through species turnover; they do not represent an already running evolutionary loop.
-
 ### 6.1 Stage game and relational state
-
-From a focal player's perspective, $L$, $R$, and $S$ are the binary actions of the left partner, right partner, and self. The eight states are encoded as
 
 $$
 \mathrm{state}=4L+2R+S.
 $$
 
-Exactly two matching players receive $3$ each; the excluded player receives $0$. If all three actions match, all payoffs are $0$. Neither action intrinsically means cooperation or defection. Implementation: [`game.py`](three_person_coalition_game/game.py).
+Exactly two matching actions earn `3` each; the excluded player earns `0`. Unanimous profiles yield `0` for all three.
 
-### 6.2 Finite-history decisions
+### 6.2 Finite-history strategy
 
-The strategy reads its focal-state history most-recent-first. It chooses card $1$ when that history and at least one maximal gene are related by a prefix in either direction; otherwise it chooses card $0$. The first action is stored separately.
+The strategy is an 8-ary tree of finite state sequences. History is read most-recent-first. Card `1` is selected when the available history and at least one maximal gene are reciprocal-prefix compatible; otherwise the strategy selects `0`. The first action is stored separately.
 
-[`strategy.py`](three_person_coalition_game/strategy.py) stores maximal gene paths for action selection. [`interaction.py`](three_person_coalition_game/interaction.py) selects all three actions from prior histories before appending the current round's states. [`chromosome.py`](three_person_coalition_game/chromosome.py) preserves the explicit prefix-closed topology needed for mutation.
+### 6.3 Historical two-seating interaction
 
-### 6.3 Tree mutation
+The detailed source does something we had not yet encoded in M3a: after `max-round` in one player order, two players exchange positions and the trio plays another `max-round`. M3b therefore evaluates both partner seatings with fresh histories.
 
-**Table 3 — Mutation operators in the current reconstruction**
+### 6.4 Ecological fitness
 
-| Operator | Reported local rate | Structural action | Provenance boundary |
-|:---|---:|:---|:---|
-| `PointAdd` | 0.100 | Add an absent branch | Mechanism Exact; candidate enumeration Reconstructed |
-| `PointRemove` | 0.100 | Remove a terminal branch | Exact mechanism |
-| `Dupli` | 0.001 | Attach all eight children to a terminal | Exact mechanism; behavior-neutral at creation |
-| `RemoveRecursively` | 0.001 | Remove a branch and its descendants | Mechanism Exact; graph targeting Reconstructed |
-
-*Reading:* Rates and operators follow the existing source reconstruction. The implementation order, `PointAdd → PointRemove → Dupli → RemoveRecursively`, is **Reconstructed**, not recovered historical code. Maximum tree depth is $4$ in the current baseline.
-
-### 6.4 Ecological fitness and population update
-
-Let $g_{ijk}$ denote the focal species-$i$ player's average payoff per round when playing with left species $j$ and right species $k$. With population fractions $x_j$ and $x_k$, its score is
+For focal species `i` and partner species `j,k`,
 
 $$
-s_i=\sum_j\sum_k g_{ijk}x_jx_k.
+s_i=\sum_j\sum_k g_{ijk}x_jx_k,
 $$
 
-The partner slots are ordered and own-species partners are included. The population mean and relative fitness are
+with own-species partners included. Population mean and relative fitness are
 
 $$
 \bar{s}=\sum_i x_i s_i,
@@ -125,97 +108,150 @@ $$
 w_i=s_i-\bar{s}.
 $$
 
-The growth update is
+Population growth is
 
 $$
 x_i(t+1)-x_i(t)=d\,w_i\,x_i(t),
 \qquad d=0.2.
 $$
 
-A below-average species falling below `KillLimit = 0.2` is removed. The current implementation checks extinction after growth and before survivor normalization; this timing is **Reconstructed**. These equations and choices are implemented in [`ecology.py`](three_person_coalition_game/ecology.py) and documented in the [protocol](REPLICATION_PROTOCOL.md).
+A below-average species that falls below `KillLimit = 0.2` is removed.
+
+### 6.5 Mutation and mutant birth
+
+The historical chromosome mutates through `PointAdd`, `PointRemove`, `Dupli`, and `RemoveRecursively`. At generation change, a mutant receives
+
+$$
+0.10\,x_{parent}
+$$
+
+of its parent's post-selection population, and the parent loses exactly that amount. The population is normalized only after mutation transfer.
 
 ## 7. Experimental design
 
-**Current scope:** implementation validation only. The existing baseline records $1{,}000$ rounds per interaction, maximum memory $4$, six initial memory-1 species, maximum nine species, and the growth, extinction, and mutation values above.
+### M3b — one generation, then stop
 
-The next bounded step is **M3b: initialization and species turnover, followed by one transparent generation**. Unavailable historical coding details will be reconstructed and labeled, not treated as reasons to omit a known mechanism. Multi-generation replication requires a declared seed plan and measurable diagnostics for the reported regimes.
+The first integration experiment uses the historical baseline wherever recovered:
 
-The visual design pass changes neither this protocol nor the model. It introduces no new experiment or result.
+**Table 3 — M3b configuration**
+
+| Component | Value | Provenance |
+|:---|---:|:---|
+| initial species | `6` | **Exact** |
+| initial population each | `1/6` | **Exact** |
+| initial memory length | `1` | **Exact** |
+| root-branch probability | `0.5` | **Reconstructed** from generation-0 branch statistics |
+| first-action probability | `0.5` | **Reconstructed** |
+| rounds per seating | `1000` | **Exact** |
+| seatings per trio | `2` | **Exact** |
+| growth constant | `0.2` | **Exact** |
+| `KillLimit` | `0.2` | **Exact** |
+| mutant share | `0.10` | **Exact** |
+| maximum species | `9` | **Exact** |
+| novel mutant at full cap | blocked | **Reconstructed** |
+| outer mutation scheduler | one local pass per surviving species | **Reconstructed** |
+| initial seed | `7` | reproducibility choice |
+| mutation seed | `11` | reproducibility choice |
+
+The experiment is deliberately not a long evolutionary run. Its stopping condition is the first normalized next-generation population.
 
 ## 8. Results
 
-### 8.1 Implementation evidence
+### 8.1 Validation result
 
-**Table 4 — What can presently be inspected**
+The combined M1–M3b suite passes **41 focused tests** in the local reproduction used for this commit. Tests protect source examples and scientific invariants rather than maximizing test count.
 
-| Component | Evidence in the repository | Claim boundary |
-|:---|:---|:---|
-| Stage game | [Profile, symmetry, and payoff checks](tests/test_game.py) | One-round mechanism |
-| Finite-history strategy | [Source examples and prefix checks](tests/test_strategy.py) | Decision semantics |
-| Repeated interaction | [Orientation and repeated-play checks](tests/test_interaction.py) | Fixed-position interaction |
-| Chromosome and mutation | [Topology, operators, and neutrality checks](tests/test_chromosome.py) | Mutation components |
-| Ecological selection | [Ordered fitness, weighting, and extinction checks](tests/test_ecology.py) | Selection components |
-| Historical evolutionary outcomes | No replication runs yet | No outcome claim |
+### 8.2 One-generation evidence
 
-*Reading:* These links identify the existing checks, not a newly executed test run. No model tests or experiments were run for this documentation-only design pass.
+The bounded historical-style run starts from six equal-frequency memory-1 species. With seeds `7` and `11`, the six initial ecological scores are approximately:
 
-### 8.2 Evolutionary evidence
+$$
+(1.5469,\ 1.4579,\ 1.2844,\ 1.3055,\ 1.2989,\ 1.6105).
+$$
 
-**No evolutionary replication results are reported.** Class differentiation, temporal differentiation, period-$3n$ societies, and later diversification remain targets. No generated figure is presented as evidence of those outcomes.
+The population mean is approximately
+
+$$
+\bar{s}=1.41736.
+$$
+
+Species indices `2`, `3`, and `4` fall below the historical extinction rule in this generation. The three survivors each produce a distinct admitted mutant under the reconstructed mutation scheduler. After 10% parent-to-mutant transfer and final normalization, the six next-generation frequencies are approximately:
+
+$$
+(0.30050,\ 0.29528,\ 0.30422,\ 0.03339,\ 0.03281,\ 0.03380).
+$$
+
+Raw machine-readable evidence is stored in [`evidence/m3b_one_generation.json`](evidence/m3b_one_generation.json).
+
+**This is an implementation-validation observation from one new seeded reconstruction run. It is not evidence that the authors' historical evolutionary trajectory has been replicated.**
+
+### 8.3 Historical evolutionary result
+
+**Not yet evaluated.** Class differentiation, temporal differentiation, period-`3n` societies, regime replacement, and later diversity remain the actual Stage-1 replication targets.
 
 ## 9. Interpretation
 
-Fitness is ecological: a strategy's performance depends on the current population, not only on a fixed opponent. The chromosome also separates structure from immediate behavior. In the recovered `Dupli` rule, replacing a terminal gene with all eight continuations preserves the current decisions while creating separately mutable branches.
+M3b is the first point where the repository contains an actual evolutionary transition rather than disconnected evolutionary ingredients. A population of strategies now plays, receives ecological fitness, changes abundance, loses weak species, produces mutants, and becomes the next normalized population.
 
-These features motivate the experiment. They do not establish that its reported evolutionary sequence has been reproduced, nor that the artificial ecology describes real international politics.
+The one-generation result also exposes the remaining scientific question cleanly: the long-run trajectory may depend on low-level reconstructed bookkeeping choices — especially the outer mutation scheduler and the behavior at the nine-species cap. Those choices should be stress-tested before we freeze a confirmatory historical replication.
 
 ## 10. Limitations and threats to validity
 
-Species birth/insertion and random initialization remain to be reconstructed or explicitly specified. Mutation-order sensitivity, extinction timing, historical run comparability, and regime classification also remain relevant limitations.
+The remaining Stage-1 uncertainties are narrow but potentially consequential:
 
-Recovering a mechanism, implementing it, passing a component check, and reproducing an evolutionary result are distinct achievements. The research manifesto permits transparent reconstruction and parameter exploration; it does not permit presenting those choices as recovered source facts.
+- exact historical outer mutation scheduler;
+- exact historical behavior at the nine-species cap;
+- exact initial first-action/random-tree PRNG;
+- combined mutation-operator order;
+- historical seeds/run count;
+- objective diagnostics for the reported social regimes.
+
+The source-defined mechanisms are present. These remaining details are therefore sensitivity questions, not reasons to delete or replace the mechanisms.
+
+A successful historical replication will establish behavior of this artificial ecology. It will not by itself validate a model of real states, alliances, or geopolitics.
 
 ## 11. Reproduction
 
-The current model and tests require no third-party Python dependency. From a checkout:
+No external dependency is required.
 
 ```bash
 git clone https://github.com/ReloadLightly/three-person-coalition-game.git
 cd three-person-coalition-game
 python -m unittest discover -s tests -v
+python -m experiments.m3b_one_generation
 ```
 
-This runs the component checks. There is not yet a command reproducing the historical evolutionary findings.
+The experiment rewrites [`evidence/m3b_one_generation.json`](evidence/m3b_one_generation.json) deterministically from the fixed seeds.
 
 ## 12. Repository map
 
-```text
-README.md                        Compact scientific paper
-RESEARCH_MANIFESTO.md             Recreate → recombine → invent
-SCIENTIFIC_REPOSITORY_STANDARD.md Governing repository standard
-REPLICATION_PROTOCOL.md          Source-to-model contract
-M3_SOURCE_RECONSTRUCTION.md       Fitness and mutation reconstruction
-README_VISUAL_SYSTEM.md           Reusable presentation pattern
-assets/hero.svg                   Mechanism-based title graphic
-three_person_coalition_game/      Executable method
-  game.py                        Stage game and state index
-  strategy.py                    Finite-history decisions
-  interaction.py                 Synchronous repeated play
-  chromosome.py                  Explicit tree and mutations
-  ecology.py                     Fitness and selection/extinction
-tests/                           Source examples and invariants
-```
+**Table 4 — Scientific artifact map**
+
+| Path | Scientific role |
+|:---|:---|
+| `README.md` | Compact executable paper |
+| `RESEARCH_MANIFESTO.md` | recreate → recombine → invent |
+| `REPLICATION_PROTOCOL.md` | current source-to-model contract |
+| `M3_SOURCE_RECONSTRUCTION.md` | pre-M3a ecological/mutation reconstruction |
+| `M3B_SOURCE_RECONSTRUCTION.md` | initialization, positional swap, mutant-birth reconstruction |
+| `three_person_coalition_game/game.py` | M1 stage game |
+| `three_person_coalition_game/strategy.py` | M2 finite-history phenotype |
+| `three_person_coalition_game/interaction.py` | bounded-memory synchronous interaction |
+| `three_person_coalition_game/chromosome.py` | explicit 8-ary tree + mutation operators |
+| `three_person_coalition_game/ecology.py` | two-seating fitness + growth/extinction |
+| `three_person_coalition_game/evolution.py` | M3b initialization + one-generation integration |
+| `experiments/m3b_one_generation.py` | bounded experiment entry point |
+| `evidence/m3b_one_generation.json` | raw one-generation evidence |
+| `tests/` | source examples and scientific invariants |
 
 ## 13. Citation
 
-Akiyama, E., & Kaneko, K. (1995). *Evolution of Cooperation, Differentiation, Complexity, and Diversity in an Iterated Three-Person Game*. **Artificial Life, 2**(3), 293–304.
+Akiyama, E., & Kaneko, K. (1995). *Evolution of Cooperation, Differentiation, Complexity, and Diversity in an Iterated Three-Person Game*. *Artificial Life*, 2(3), 293–304.
 
-The other primary sources and reconstruction decisions are identified in the [protocol](REPLICATION_PROTOCOL.md). A project-specific `CITATION.cff` is deferred until a citable replication release.
+A project-specific `CITATION.cff` will be added when the historical replication reaches a citable release.
 
-## 14. License and responsible use
+## 14. Next bounded step
 
-A repository license has not yet been selected. The current artifact supports no downstream policy claim. Presentation follows the adopted [Scientific Repository Standard](SCIENTIFIC_REPOSITORY_STANDARD.md), with the reusable banner, table, and equation conventions recorded in [README_VISUAL_SYSTEM.md](README_VISUAL_SYSTEM.md).
+**M3c — short exploratory trajectory, not yet the frozen historical replication.**
 
----
-
-**Next scientific step: M3b.** Reconstruct initialization and mutant-species turnover, then inspect one generation. The full evolutionary run remains separate.
+The next useful experiment is a small multi-generation pilot (for example 25–50 generations) with diagnostics that expose how often the reconstructed cap rule and mutation scheduler are actually invoked. If those choices materially dominate the dynamics, we resolve/sweep them before M4; if they do not, we can freeze the Stage-1 historical replication protocol.

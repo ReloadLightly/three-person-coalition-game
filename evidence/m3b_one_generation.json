@@ -1,0 +1,106 @@
+{
+  "artifact": "m3b_one_generation",
+  "status": "implementation_validation",
+  "claim_boundary": "One source-anchored generation transition executes end-to-end; this is not evidence that the historical evolutionary regimes are reproduced.",
+  "configuration": {
+    "initial_seed": 7,
+    "mutation_seed": 11,
+    "rounds_per_seating": 1000,
+    "two_seatings_per_matchup": true,
+    "initial_species": 6,
+    "initial_frequency_each": 0.16666666666666666,
+    "max_species": 9,
+    "growth_constant": 0.2,
+    "kill_limit": 0.2,
+    "mutant_share": 0.1
+  },
+  "reconstructed_choices": {
+    "initial_root_branch_probability": 0.5,
+    "initial_action_probability": 0.5,
+    "mutation_scheduler": "one_local_mutation_pass_per_surviving_species",
+    "species_cap_rule": "block_novel_mutant_when_full",
+    "multi_operator_order": [
+      "PointAdd",
+      "PointRemove",
+      "Dupli",
+      "RemoveRecursively"
+    ]
+  },
+  "before": {
+    "frequencies": [
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666
+    ],
+    "chromosomes": [
+      {"initial_action": 1, "genes": [[0], [2], [4], [5], [7]]},
+      {"initial_action": 1, "genes": [[0], [1], [2], [4], [5]]},
+      {"initial_action": 0, "genes": [[0], [2], [4], [5], [6], [7]]},
+      {"initial_action": 0, "genes": [[0], [3], [5], [6], [7]]},
+      {"initial_action": 0, "genes": [[0], [1], [3], [4], [7]]},
+      {"initial_action": 0, "genes": [[3], [5], [6]]}
+    ]
+  },
+  "selection": {
+    "scores": [
+      1.5469166666666667,
+      1.4579166666666663,
+      1.284416666666667,
+      1.3054999999999999,
+      1.2989166666666665,
+      1.6105000000000003
+    ],
+    "mean_score": 1.417361111111111,
+    "fitness": [
+      0.12955555555555565,
+      0.040555555555555234,
+      -0.1329444444444441,
+      -0.11186111111111119,
+      -0.11844444444444457,
+      0.1931388888888892
+    ],
+    "extinct_indices": [2, 3, 4]
+  },
+  "mutation_events": [
+    {
+      "parent_index_after_extinction": 0,
+      "outcome": "new",
+      "recipient_index": 3,
+      "mutant": {"initial_action": 1, "genes": [[0], [2, 1], [2, 4], [4, 2], [4, 4], [4, 7], [5]]}
+    },
+    {
+      "parent_index_after_extinction": 1,
+      "outcome": "new",
+      "recipient_index": 4,
+      "mutant": {"initial_action": 1, "genes": [[0], [1], [2], [3], [4, 1], [4, 2], [5]]}
+    },
+    {
+      "parent_index_after_extinction": 2,
+      "outcome": "new",
+      "recipient_index": 5,
+      "mutant": {"initial_action": 0, "genes": [[3, 1], [3, 4], [5], [6, 1], [6, 5]]}
+    }
+  ],
+  "after": {
+    "species_count": 6,
+    "frequencies": [
+      0.3004963142564236,
+      0.29528257367419,
+      0.30422111206938635,
+      0.03338847936182485,
+      0.03280917485268778,
+      0.033802345785487374
+    ],
+    "chromosomes": [
+      {"initial_action": 1, "genes": [[0], [2], [4], [5], [7]]},
+      {"initial_action": 1, "genes": [[0], [1], [2], [4], [5]]},
+      {"initial_action": 0, "genes": [[3], [5], [6]]},
+      {"initial_action": 1, "genes": [[0], [2, 1], [2, 4], [4, 2], [4, 4], [4, 7], [5]]},
+      {"initial_action": 1, "genes": [[0], [1], [2], [3], [4, 1], [4, 2], [5]]},
+      {"initial_action": 0, "genes": [[3, 1], [3, 4], [5], [6, 1], [6, 5]]}
+    ]
+  }
+}

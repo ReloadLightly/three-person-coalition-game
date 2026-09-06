@@ -33,7 +33,12 @@ def focal_states(actions: Sequence[Action]) -> tuple[RoundState, RoundState, Rou
 
 
 def play_interaction(strategies: Sequence[Strategy], rounds: int) -> tuple[InteractionRound, ...]:
-    """Play one fixed-position synchronous interaction for ``rounds`` rounds."""
+    """Play one fixed-position synchronous interaction for ``rounds`` rounds.
+
+    Only the recent history that can affect a finite-memory strategy is retained.
+    This is behaviorally equivalent to storing the full history but prevents the
+    historical 1000-round tournament from doing unnecessary quadratic work.
+    """
 
     if len(strategies) != 3:
         raise ValueError("exactly three strategies are required")
@@ -52,5 +57,11 @@ def play_interaction(strategies: Sequence[Strategy], rounds: int) -> tuple[Inter
         records.append(InteractionRound(actions=actions, states=state_ids, payoffs=payoffs))
         for i, state_id in enumerate(state_ids):
             histories[i].append(state_id)
+            # A gene can inspect at most its own memory length. Keep one previous
+            # state even for the empty-gene strategy so rounds after the first do
+            # not accidentally reuse ``initial_action``.
+            limit = max(1, strategies[i].memory_length)
+            if len(histories[i]) > limit:
+                del histories[i][:-limit]
 
     return tuple(records)
