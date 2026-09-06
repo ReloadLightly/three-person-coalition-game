@@ -1,0 +1,64 @@
+{
+  "artifact": "m3c_25_generation_exploration",
+  "status": "exploratory",
+  "claim_boundary": "Three seeded 25-generation trajectories diagnose the reconstructed ecology and bookkeeping choices; they do not test historical regime replication.",
+  "configuration": {
+    "generations": 25,
+    "seed_pairs": [[7,11],[17,23],[29,31]],
+    "rounds_per_seating": 1000,
+    "two_seatings_per_matchup": true,
+    "initial_species": 6,
+    "max_species": 9,
+    "growth_constant": 0.2,
+    "kill_limit": 0.2,
+    "mutant_share": 0.1
+  },
+  "reconstructed_choices": {
+    "initial_root_branch_probability": 0.5,
+    "initial_action_probability": 0.5,
+    "mutation_scheduler": "one_local_mutation_pass_per_surviving_species",
+    "species_cap_rule": "block_novel_mutant_when_full",
+    "multi_operator_order": ["PointAdd","PointRemove","Dupli","RemoveRecursively"]
+  },
+  "runs": [
+    {
+      "initial_seed": 7,
+      "mutation_seed": 11,
+      "summary": {
+        "species_cap_first_reached_generation": 4,
+        "total_extinctions": 12,
+        "mutation_outcome_totals": {"unchanged":4,"new":15,"merged":0,"blocked_at_cap":184},
+        "final_mean_score": 1.5141152930159798,
+        "final_dominant_frequency": 0.3118265003967224,
+        "final_max_memory_depth": 2
+      },
+      "unique_cached_matchups": 1989
+    },
+    {
+      "initial_seed": 17,
+      "mutation_seed": 23,
+      "summary": {
+        "species_cap_first_reached_generation": 3,
+        "total_extinctions": 4,
+        "mutation_outcome_totals": {"unchanged":16,"new":7,"merged":2,"blocked_at_cap":187},
+        "final_mean_score": 0.0,
+        "final_dominant_frequency": 0.3715113935050005,
+        "final_max_memory_depth": 3
+      },
+      "unique_cached_matchups": 937
+    },
+    {
+      "initial_seed": 29,
+      "mutation_seed": 31,
+      "summary": {
+        "species_cap_first_reached_generation": 4,
+        "total_extinctions": 36,
+        "mutation_outcome_totals": {"unchanged":1,"new":39,"merged":0,"blocked_at_cap":133},
+        "final_mean_score": 0.8209271771136395,
+        "final_dominant_frequency": 0.4347777197039352,
+        "final_max_memory_depth": 3
+      },
+      "unique_cached_matchups": 5511
+    }
+  ]
+}
