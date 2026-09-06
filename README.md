@@ -8,38 +8,41 @@
 
 | Field | Current state |
 |:---|:---|
-| Study status | **Implementation validation / exploratory evidence** |
-| Milestone | **M3b** — one full generation now executes end-to-end |
-| Supported claim | One source-anchored generation runs from interaction through mutant birth; historical long-run regimes are **not yet reproduced** |
+| Study status | **Exploratory** |
+| Milestone | **M3c** — three 25-generation trajectories completed |
+| Supported claim | The reconstructed ecology evolves across generations, but the current Reconstructed nine-species cap rule materially constrains mutation; historical long-run regimes are **not yet reproduced** |
 | Verification | `python -m unittest discover -s tests -v` |
-| Bounded experiment | `python -m experiments.m3b_one_generation` |
+| Exploratory experiment | `python -m experiments.m3c_25_generations` |
 
 ## Abstract
 
 This repository reconstructs the artificial-life model developed by Eizo Akiyama and Kunihiko Kaneko to study coalition structure, communication, exploitation, cooperation, and role differentiation in an iterated three-person game. Three players repeatedly choose between two symmetric actions. When exactly two actions match, those players receive a payoff and the third receives none. Strategies use finite histories of relational states and are encoded by an 8-ary chromosome. Strategy classes form species whose population shares change through ecological fitness, extinction, and mutation.
 
-M1–M3a reconstructed the stage game, finite-history strategy, repeated interaction, explicit chromosome, ecological fitness, relative selection, extinction, and four historical mutation operators. **M3b now closes the generation loop:** each matchup is evaluated in both source-required partner seatings; six random memory-1 species begin at equal population `1/6`; surviving species generate mutant proposals; an admitted mutant receives exactly 10% of its parent's population; and normalization occurs after mutation.
+M1–M3b reconstructed and integrated the stage game, finite-history strategy, two-seating repeated interaction, explicit chromosome, ecological fitness, relative selection, extinction, historical mutation operators, initialization, and mutant birth. **M3c is the first short multi-generation exploration:** three fixed seed pairs are followed for 25 generations at the historical 1000-round interaction length.
 
-The first evolutionary experiment deliberately runs **one generation only**. It is evidence that the causal pipeline executes, not evidence that the reported transitions to class differentiation, temporal differentiation, or later diversity have already been replicated.
+The main result of this exploratory step is methodological rather than historical. All three trajectories reach the maximum of nine species by generation 3 or 4. Under the current Reconstructed rule — block a novel mutant when the population is already full — **504 novel mutant proposals are blocked while only 61 are admitted** across the three runs. One run also enters a zero-payoff ecology by generation 2. These observations show that the ecology is dynamically active, but they also show that the cap bookkeeping is too consequential to leave unexamined before a frozen historical replication.
 
 ## 1. Research question
 
 **Does a faithful reconstruction reproduce the reported transition from class differentiation to temporal role differentiation and, later, diversified coalition/communication regimes?**
 
-The current question is narrower: does one historically grounded generation transition execute correctly enough that we can now justify a short exploratory evolutionary trajectory?
+M3c asks a narrower diagnostic question first:
+
+> **Does the reconstructed ecology remain evolutionarily active for 25 generations, and do our explicitly Reconstructed bookkeeping choices materially shape those trajectories?**
 
 ## 2. Why this matters
 
 The model is unusually attractive for artificial-life approaches to international relations because **coalition structure is endogenous**. Coalition membership, exclusion, role allocation, and communication emerge from decentralized interaction rather than being hard-coded as a permanent alliance graph.
 
-The scientific route is therefore deliberately staged: first recreate the artificial ecology, then recombine it with later sourced mechanisms, and only afterward consider a genuinely new computational-IR model.
+The scientific route remains deliberately staged: recreate the historical artificial ecology first; then recombine it with later sourced mechanisms; only afterward consider a genuinely new computational-IR model.
 
 ## 3. Contributions at the current stage
 
 1. **Source reconstruction.** Original papers, a detailed Japanese exposition, and Akiyama's thesis are translated into an executable mechanism with provenance labels.
-2. **Complete one-generation causal chain.** Interaction → ecological fitness → growth/extinction → mutation birth → normalization now runs end-to-end.
-3. **Explicit uncertainty.** Historical facts and reconstructed bookkeeping choices remain visibly distinct.
-4. **Executable-paper structure.** Question, method, evidence, interpretation, limits, and reproduction are kept in one scientific artifact.
+2. **Multi-generation executable ecology.** The historical-style causal chain now runs repeatedly rather than for only one generation.
+3. **Diagnostic evidence.** Three short trajectories expose where the remaining Reconstructed bookkeeping choices actually matter.
+4. **Exact computational acceleration.** Finite deterministic cycles and previously evaluated strategy matchups are reused without approximating the model.
+5. **Executable-paper structure.** Question, method, evidence, interpretation, limitations, and reproduction remain visible in the repository itself.
 
 ## 4. Primary sources
 
@@ -58,8 +61,8 @@ See [REPLICATION_PROTOCOL.md](REPLICATION_PROTOCOL.md), [M3_SOURCE_RECONSTRUCTIO
 |:---|:---|:---|:---|
 | R1 | Reconstruct stage game | Exhaust all 8 action profiles | **Implemented** |
 | R2 | Reconstruct finite-history strategy | Source examples + deterministic trajectories | **Implemented** |
-| R3 | Reconstruct evolutionary population dynamics | Source equations + mutation + species turnover | **One generation implemented** |
-| R4 | Reproduce historical evolutionary regimes | Frozen multi-seed experiment | Not yet run |
+| R3 | Reconstruct evolutionary population dynamics | Source equations + mutation + species turnover | **25-generation exploratory trajectories run** |
+| R4 | Reproduce historical evolutionary regimes | Frozen multi-seed experiment with objective diagnostics | Not yet run |
 | R5 | Separate replication from later extension | Explicit Stage 1/2/3 provenance | Active |
 
 ## 6. Method
@@ -74,6 +77,7 @@ flowchart LR
     F --> G["Tree mutation<br/>4 operators"]
     G --> H["Mutant birth<br/>10% parent mass"]
     H --> I["Normalize<br/>next generation"]
+    I --> D
 ```
 
 ### 6.1 Stage game and relational state
@@ -90,7 +94,7 @@ The strategy is an 8-ary tree of finite state sequences. History is read most-re
 
 ### 6.3 Historical two-seating interaction
 
-The detailed source does something we had not yet encoded in M3a: after `max-round` in one player order, two players exchange positions and the trio plays another `max-round`. M3b therefore evaluates both partner seatings with fresh histories.
+Each three-strategy matchup is played for `1000` rounds, then the two partner positions are exchanged and a second fresh `1000`-round interaction is played.
 
 ### 6.4 Ecological fitness
 
@@ -119,96 +123,108 @@ A below-average species that falls below `KillLimit = 0.2` is removed.
 
 ### 6.5 Mutation and mutant birth
 
-The historical chromosome mutates through `PointAdd`, `PointRemove`, `Dupli`, and `RemoveRecursively`. At generation change, a mutant receives
+The historical chromosome mutates through `PointAdd`, `PointRemove`, `Dupli`, and `RemoveRecursively`. An admitted mutant receives
 
 $$
 0.10\,x_{parent}
 $$
 
-of its parent's post-selection population, and the parent loses exactly that amount. The population is normalized only after mutation transfer.
+of its parent's post-selection population, and the parent loses exactly that amount. Final normalization follows mutation transfer.
+
+### 6.6 Exact computational acceleration for M3c
+
+A 25-generation trajectory repeatedly evaluates deterministic 1000-round matchups. M3c makes this practical without changing the experiment:
+
+- **cycle skipping:** a finite-memory deterministic interaction is in exactly the same future state whenever the same joint finite-history state recurs; complete repeated cycles can therefore be skipped exactly;
+- **payoff caching:** `g_ijk` depends on the three strategies, not their current population frequencies, so a previously evaluated strategy triple can be reused in later generations.
+
+These are computational equivalences, not new mechanisms or approximate shortcuts. The accelerated matchup evaluator is tested against explicit round-by-round execution.
 
 ## 7. Experimental design
 
-### M3b — one generation, then stop
+### M3c — 25 generations × three seed pairs
 
-The first integration experiment uses the historical baseline wherever recovered:
-
-**Table 3 — M3b configuration**
+**Table 3 — M3c configuration**
 
 | Component | Value | Provenance |
-|:---|---:|:---|
+|:---|:---|:---|
+| generations | `25` | exploratory design |
+| seed pairs `(initial, mutation)` | `(7,11)`, `(17,23)`, `(29,31)` | reproducibility choices |
 | initial species | `6` | **Exact** |
 | initial population each | `1/6` | **Exact** |
 | initial memory length | `1` | **Exact** |
-| root-branch probability | `0.5` | **Reconstructed** from generation-0 branch statistics |
+| root-branch probability | `0.5` | **Reconstructed** |
 | first-action probability | `0.5` | **Reconstructed** |
 | rounds per seating | `1000` | **Exact** |
-| seatings per trio | `2` | **Exact** |
+| seatings per matchup | `2` | **Exact** |
 | growth constant | `0.2` | **Exact** |
 | `KillLimit` | `0.2` | **Exact** |
 | mutant share | `0.10` | **Exact** |
 | maximum species | `9` | **Exact** |
 | novel mutant at full cap | blocked | **Reconstructed** |
 | outer mutation scheduler | one local pass per surviving species | **Reconstructed** |
-| initial seed | `7` | reproducibility choice |
-| mutation seed | `11` | reproducibility choice |
 
-The experiment is deliberately not a long evolutionary run. Its stopping condition is the first normalized next-generation population.
+For every generation the experiment records species count and frequencies, dominant frequency, frequency entropy, ecological score range and mean, extinctions, mutation outcomes, chromosome node counts, and maximum memory depth.
+
+This is **exploratory diagnostics**, not the frozen historical replication.
 
 ## 8. Results
 
-### 8.1 Validation result
+### 8.1 Three exploratory trajectories
 
-The combined M1–M3b suite passes **41 focused tests** in the local reproduction used for this commit. Tests protect source examples and scientific invariants rather than maximizing test count.
+**Table 4 — M3c trajectory summary**
 
-### 8.2 One-generation evidence
+| Seeds | Cap first reached | Extinctions | New mutants | Merged | Blocked at cap | Final mean score | Final dominant share | Final max depth |
+|:---|---:|---:|---:|---:|---:|---:|---:|---:|
+| `7 / 11` | gen `4` | `12` | `15` | `0` | `184` | `1.5141` | `0.3118` | `2` |
+| `17 / 23` | gen `3` | `4` | `7` | `2` | `187` | `0.0000` | `0.3715` | `3` |
+| `29 / 31` | gen `4` | `36` | `39` | `0` | `133` | `0.8209` | `0.4348` | `3` |
 
-The bounded historical-style run starts from six equal-frequency memory-1 species. With seeds `7` and `11`, the six initial ecological scores are approximately:
+Across the three trajectories, **504 novel mutant proposals are blocked at the nine-species cap**, compared with **61 admitted novel mutants** and **2 merges**.
 
-$$
-(1.5469,\ 1.4579,\ 1.2844,\ 1.3055,\ 1.2989,\ 1.6105).
-$$
+This is the clearest M3c result: the current Reconstructed cap rule is not a rarely visited edge case. It becomes active almost immediately and then governs a large fraction of mutation proposals.
 
-The population mean is approximately
+### 8.2 Three qualitatively different trajectories
 
-$$
-\bar{s}=1.41736.
-$$
+The runs do not merely repeat one deterministic story:
 
-Species indices `2`, `3`, and `4` fall below the historical extinction rule in this generation. The three survivors each produce a distinct admitted mutant under the reconstructed mutation scheduler. After 10% parent-to-mutant transfer and final normalization, the six next-generation frequencies are approximately:
+- `7 / 11` reaches capacity at generation 4, undergoes 12 extinctions, and finishes with a mean score around `1.51`;
+- `17 / 23` reaches capacity at generation 3 and enters a **zero-payoff ecology by generation 2**, remaining at mean score `0` through generation 25 under this seeded reconstruction;
+- `29 / 31` is more turnover-heavy, with 36 extinctions and 39 admitted novel mutants, and finishes with a mean score around `0.82`.
 
-$$
-(0.30050,\ 0.29528,\ 0.30422,\ 0.03339,\ 0.03281,\ 0.03380).
-$$
+The zero-payoff trajectory is an exploratory observation from one seed pair, not a claim that the historical model generically collapses.
 
-Raw machine-readable evidence is stored in [`evidence/m3b_one_generation.json`](evidence/m3b_one_generation.json).
+### 8.3 Evidence artifacts
 
-**This is an implementation-validation observation from one new seeded reconstruction run. It is not evidence that the authors' historical evolutionary trajectory has been replicated.**
+- [`evidence/m3c_25_generation_summary.json`](evidence/m3c_25_generation_summary.json) — compact cross-run summary;
+- [`evidence/m3c_seed_7_diagnostics.csv`](evidence/m3c_seed_7_diagnostics.csv) — all generations for seed pair `7/11`;
+- [`evidence/m3c_seed_17_diagnostics.csv`](evidence/m3c_seed_17_diagnostics.csv) — all generations for `17/23`;
+- [`evidence/m3c_seed_29_diagnostics.csv`](evidence/m3c_seed_29_diagnostics.csv) — all generations for `29/31`.
 
-### 8.3 Historical evolutionary result
+### 8.4 Historical evolutionary result
 
-**Not yet evaluated.** Class differentiation, temporal differentiation, period-`3n` societies, regime replacement, and later diversity remain the actual Stage-1 replication targets.
+**Not yet evaluated.** Class differentiation, temporal differentiation, period-`3n` societies, regime replacement, and later diversity remain the Stage-1 replication targets.
 
 ## 9. Interpretation
 
-M3b is the first point where the repository contains an actual evolutionary transition rather than disconnected evolutionary ingredients. A population of strategies now plays, receives ecological fitness, changes abundance, loses weak species, produces mutants, and becomes the next normalized population.
+M3c did exactly what an exploratory pilot should do: it exposed a consequential uncertainty **before** we froze a larger experiment.
 
-The one-generation result also exposes the remaining scientific question cleanly: the long-run trajectory may depend on low-level reconstructed bookkeeping choices — especially the outer mutation scheduler and the behavior at the nine-species cap. Those choices should be stress-tested before we freeze a confirmatory historical replication.
+The ecology clearly supports sustained generation-to-generation selection, extinction, mutation, species birth, and increasing chromosome depth. But the current rule for what happens at nine species is invoked so often that it can no longer be treated as harmless bookkeeping. If we proceeded directly to M4, a substantial part of the apparent evolutionary dynamics could be an artifact of our Reconstructed cap handling rather than Akiyama & Kaneko's historical implementation.
+
+That makes the next scientific move unusually clear: **do not choose the cap rule that gives the prettiest historical-looking trajectory. Resolve it from sources if possible; otherwise compare a very small set of defensible reconstructions under matched seeds.**
 
 ## 10. Limitations and threats to validity
 
-The remaining Stage-1 uncertainties are narrow but potentially consequential:
+The priority ordering of remaining uncertainties has changed because of M3c:
 
-- exact historical outer mutation scheduler;
-- exact historical behavior at the nine-species cap;
-- exact initial first-action/random-tree PRNG;
-- combined mutation-operator order;
-- historical seeds/run count;
-- objective diagnostics for the reported social regimes.
+1. **nine-species cap bookkeeping** — now demonstrated to be highly active and therefore the immediate validity threat;
+2. **outer mutation scheduler** — still Reconstructed and potentially consequential;
+3. **random memory-1 initialization / first-action generator** — Reconstructed;
+4. **combined mutation-operator order** — Reconstructed;
+5. **historical seeds / run count** — unresolved;
+6. **objective diagnostics for class vs temporal differentiation and later diversity** — must be frozen before M4.
 
-The source-defined mechanisms are present. These remaining details are therefore sensitivity questions, not reasons to delete or replace the mechanisms.
-
-A successful historical replication will establish behavior of this artificial ecology. It will not by itself validate a model of real states, alliances, or geopolitics.
+The source-defined causal mechanisms remain present. These are reconstruction and sensitivity questions, not reasons to replace the model.
 
 ## 11. Reproduction
 
@@ -218,30 +234,33 @@ No external dependency is required.
 git clone https://github.com/ReloadLightly/three-person-coalition-game.git
 cd three-person-coalition-game
 python -m unittest discover -s tests -v
-python -m experiments.m3b_one_generation
+python -m experiments.m3c_25_generations
 ```
 
-The experiment rewrites [`evidence/m3b_one_generation.json`](evidence/m3b_one_generation.json) deterministically from the fixed seeds.
+The M3c command deterministically regenerates the compact summary and three per-seed diagnostic CSVs from the fixed seed pairs.
 
 ## 12. Repository map
 
-**Table 4 — Scientific artifact map**
+**Table 5 — Scientific artifact map**
 
 | Path | Scientific role |
 |:---|:---|
 | `README.md` | Compact executable paper |
 | `RESEARCH_MANIFESTO.md` | recreate → recombine → invent |
-| `REPLICATION_PROTOCOL.md` | current source-to-model contract |
+| `REPLICATION_PROTOCOL.md` | current source-to-model and experiment contract |
 | `M3_SOURCE_RECONSTRUCTION.md` | pre-M3a ecological/mutation reconstruction |
 | `M3B_SOURCE_RECONSTRUCTION.md` | initialization, positional swap, mutant-birth reconstruction |
 | `three_person_coalition_game/game.py` | M1 stage game |
 | `three_person_coalition_game/strategy.py` | M2 finite-history phenotype |
 | `three_person_coalition_game/interaction.py` | bounded-memory synchronous interaction |
 | `three_person_coalition_game/chromosome.py` | explicit 8-ary tree + mutation operators |
-| `three_person_coalition_game/ecology.py` | two-seating fitness + growth/extinction |
-| `three_person_coalition_game/evolution.py` | M3b initialization + one-generation integration |
-| `experiments/m3b_one_generation.py` | bounded experiment entry point |
-| `evidence/m3b_one_generation.json` | raw one-generation evidence |
+| `three_person_coalition_game/ecology.py` | two-seating fitness + exact cycle/cache acceleration |
+| `three_person_coalition_game/evolution.py` | initialization + repeated generation integration |
+| `experiments/m3b_one_generation.py` | one-generation integration check |
+| `experiments/m3c_25_generations.py` | three 25-generation exploratory trajectories |
+| `evidence/m3b_one_generation.json` | raw M3b integration evidence |
+| `evidence/m3c_25_generation_summary.json` | M3c cross-run summary |
+| `evidence/m3c_seed_*_diagnostics.csv` | generation-by-generation M3c diagnostics |
 | `tests/` | source examples and scientific invariants |
 
 ## 13. Citation
@@ -252,6 +271,6 @@ A project-specific `CITATION.cff` will be added when the historical replication 
 
 ## 14. Next bounded step
 
-**M3c — short exploratory trajectory, not yet the frozen historical replication.**
+**M3d — resolve or sensitivity-test the nine-species cap rule before M4.**
 
-The next useful experiment is a small multi-generation pilot (for example 25–50 generations) with diagnostics that expose how often the reconstructed cap rule and mutation scheduler are actually invoked. If those choices materially dominate the dynamics, we resolve/sweep them before M4; if they do not, we can freeze the Stage-1 historical replication protocol.
+First search the detailed sources once more for the original full-cap behavior. If it remains unavailable, compare only a small set of defensible cap reconstructions under identical initial seeds, mutation streams, and historical mechanisms. The purpose is not to find the variant that resembles the paper most closely; it is to determine whether the historical replication claim is robust to this unavoidable reconstruction choice.
