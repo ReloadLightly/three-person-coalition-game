@@ -4,10 +4,12 @@ from three_person_coalition_game.ecology import (
     HISTORICAL_GROWTH_CONSTANT,
     HISTORICAL_KILL_LIMIT,
     fitness_tensor,
+    historical_focal_payoff,
     ordered_focal_payoff,
     species_scores,
     update_population,
 )
+from three_person_coalition_game.interaction import play_interaction
 from three_person_coalition_game.strategy import Strategy
 
 
@@ -16,8 +18,6 @@ def always_zero() -> Strategy:
 
 
 def always_one() -> Strategy:
-    # Any non-empty history begins with exactly one state 0...7, so one of these
-    # one-state genes always matches and card 1 is repeated forever.
     return Strategy.from_genes(1, [(state,) for state in range(8)])
 
 
@@ -29,6 +29,22 @@ class EcologyTests(unittest.TestCase):
         self.assertEqual(ordered_focal_payoff(zero, one, zero, rounds=5), 3.0)
         self.assertEqual(ordered_focal_payoff(zero, zero, one, rounds=5), 3.0)
 
+    def test_cycle_skipping_matches_explicit_two_seating_execution(self) -> None:
+        focal = Strategy.from_genes(1, [(1, 2), (3, 5), (6,)])
+        left = always_zero()
+        right = always_one()
+        rounds = 37
+        first = play_interaction((focal, left, right), rounds=rounds)
+        second = play_interaction((focal, right, left), rounds=rounds)
+        explicit = (
+            sum(record.payoffs[0] for record in first)
+            + sum(record.payoffs[0] for record in second)
+        ) / (2 * rounds)
+        self.assertEqual(
+            historical_focal_payoff(focal, left, right, rounds=rounds),
+            explicit,
+        )
+
     def test_fitness_tensor_contains_every_ordered_triple_including_self_play(self) -> None:
         strategies = (always_zero(), always_one())
         tensor = fitness_tensor(strategies, rounds=3)
@@ -38,13 +54,20 @@ class EcologyTests(unittest.TestCase):
         self.assertIn((0, 1, 0), tensor)
         self.assertIn((1, 1, 1), tensor)
 
+    def test_payoff_cache_reuses_deterministic_matchups(self) -> None:
+        strategies = (always_zero(), always_one())
+        cache = {}
+        first = fitness_tensor(strategies, rounds=5, payoff_cache=cache)
+        cached_count = len(cache)
+        second = fitness_tensor(strategies, rounds=5, payoff_cache=cache)
+        self.assertEqual(first, second)
+        self.assertEqual(len(cache), cached_count)
+        self.assertEqual(cached_count, 8)
+
     def test_species_scores_match_population_weighted_ordered_pairs(self) -> None:
         strategies = (always_zero(), always_one())
         frequencies = (0.75, 0.25)
         scores = species_scores(strategies, frequencies, rounds=4)
-
-        # For either pure-card focal strategy, payoff 3 occurs exactly when one
-        # partner shares its card and the other does not. Probability = 2pq.
         expected = 3.0 * 2.0 * 0.75 * 0.25
         self.assertAlmostEqual(scores[0], expected)
         self.assertAlmostEqual(scores[1], expected)
