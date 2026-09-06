@@ -1,11 +1,10 @@
 # Replication protocol
 
-> **Current bounded step:** M3 source reconstruction — species fitness + mutation  
-> **Implementation status:** M1–M2 code only; no M3 evolutionary code yet  
-> **Study status:** Protocol  
+> **Current milestone:** M3a — evolutionary core implementation  
+> **Study status:** Protocol / implementation validation  
 > **Research ladder:** [`RESEARCH_MANIFESTO.md`](RESEARCH_MANIFESTO.md)
 
-This document is the scientific contract for Stage 1 of the project: recreate Akiyama & Kaneko's three-person coalition experiment closely enough to understand and reproduce its mechanism before recombination or invention.
+This file is the scientific contract for **Stage 1 — recreate**. It distinguishes what is source-recovered from what is reconstructed at the executable-detail level.
 
 > **Mechanisms must be source-anchored. Missing implementation details are reconstructed. Missing numerical values are estimated or swept. Known mechanisms are never deleted merely because their historical coding details are incomplete.**
 
@@ -13,226 +12,170 @@ This document is the scientific contract for Stage 1 of the project: recreate Ak
 
 | ID | Source | Role |
 |:---|:---|:---|
-| **S1** | Akiyama & Kaneko (1995), *Evolution of Cooperation, Differentiation, Complexity, and Diversity in an Iterated Three-Person Game*, *Artificial Life* 2(3):293–304; arXiv `adap-org/9504002` | Primary scientific specification |
-| **S2** | Akiyama & Kaneko, *Evolution of Communication and Strategies in an Iterated Three-Person Game*, *Artificial Life V*, pp. 193–201 | Conference specification and replication target |
-| **S3** | Akiyama & Kaneko, BIES 1995, pp. 76–83 | Earlier version cited by S2 |
-| **S4** | Akiyama, *三人ゲームにおける協力の発生とその進化* (1995) | Contemporary detailed exposition; 8-ary coding, mutation rates, simulation parameters |
-| **S5** | Akiyama (1998), *『動的ゲーム』とゲームのダイナミクス：結託構造とコミュニケーションの進化*, University of Tokyo doctoral thesis, Chapter 18 | Detailed exposition of mutation operators and population-fitness equations |
+| **S1** | Akiyama & Kaneko (1995), *Evolution of Cooperation, Differentiation, Complexity, and Diversity in an Iterated Three-Person Game* | Primary scientific specification |
+| **S2** | Akiyama & Kaneko, *Evolution of Communication and Strategies in an Iterated Three-Person Game*, *Artificial Life V* | Conference replication target |
+| **S3** | Akiyama & Kaneko, BIES 1995 | Earlier version cited by S2 |
+| **S4** | Akiyama, *三人ゲームにおける協力の発生とその進化* (1995) | Detailed 8-ary coding, mutation rates, parameters |
+| **S5** | Akiyama doctoral thesis (1998), Chapter 18 | Detailed fitness equations and mutation operators |
 
-Where sources differ, the discrepancy must be recorded before a historical baseline is frozen.
+Where sources disagree, the disagreement must be recorded before the historical baseline is frozen.
 
 ## 2. Provenance labels
 
 | Label | Meaning |
 |:---|:---|
 | **Exact** | Directly recovered mechanism, implementation detail, or numerical value |
-| **Reconstructed** | Mechanism sourced; executable detail inferred from descriptions/examples |
-| **Estimated** | Mechanism sourced; numerical value chosen because historical value is unavailable |
+| **Reconstructed** | Mechanism sourced; executable detail inferred from source evidence |
+| **Estimated** | Mechanism sourced; numerical value chosen because the exact historical value is unavailable |
 | **Recombined** | Mechanism imported from another cited study; Stage 2 only |
 | **Novel** | Mechanism or theory proposed by us; Stage 3 only |
 
-Stage 1 may contain **Exact**, **Reconstructed**, and **Estimated** components. It may not silently introduce **Recombined** or **Novel** mechanisms.
+Stage 1 may contain Exact, Reconstructed, and Estimated components. It may not silently introduce Recombined or Novel mechanisms.
 
-## 3. Core model recovered before M3
+## 3. Historical model contract
 
 ### 3.1 Stage game — Exact
 
-Each of three players chooses `0` or `1`. If exactly two match, those two receive `3` and the excluded player receives `0`; unanimous profiles give all players `0`.
+Three players choose `0` or `1`. Exactly two matching players receive `3` each and the excluded player receives `0`. Unanimous profiles give all three `0`.
 
 ### 3.2 Relational state — Exact
 
-From a focal player's perspective the state digits are `(left,right,self)`, hence
+From the focal player's perspective the state is
 
 \[
-\text{state}=4L+2R+S.
+4L + 2R + S,
 \]
 
-### 3.3 Finite-history strategy — Exact semantics; reconstructed Python representation
+where the binary digits are left, right, and self.
 
-The historical chromosome is an 8-ary tree of state-sequence genes. A player forms its prior-state history in most-recent-first order and plays `1` if that sequence and at least one maximal gene stand in a reciprocal prefix relation; otherwise it plays `0`. The first-round action is stored separately.
+### 3.3 Finite-history strategy — Exact semantics
 
-M2 represents the action-equivalent chromosome by maximal gene paths. M3 mutation requires explicit branch topology.
+The chromosome is an 8-ary tree of state-sequence genes. History is read most-recent-first. The strategy plays `1` when the available history and at least one maximal gene stand in a reciprocal prefix relation; otherwise it plays `0`. The first action is stored separately.
+
+M2's maximal-gene representation is a **Reconstructed storage representation preserving the Exact action rule**.
 
 ### 3.4 Repeated interaction — Exact mechanism
 
-Actions are selected synchronously from prior histories, relational states/payoffs are computed, histories are updated, and the process repeats. Historical baseline: `1000` rounds.
+The three actions are chosen synchronously from prior histories; relational states/payoffs are then computed and histories updated. Historical interaction length: `1000` rounds.
 
-## 4. Historical baseline parameters recovered
+### 3.5 Ordered ecological fitness — Exact mechanism
 
-| Parameter | Historical baseline | Provenance |
-|:---|---:|:---|
-| Maximum rounds | `1000` | Exact |
-| Growth constant `d` | `0.2` | Exact |
-| `KillLimit` | `0.2` | Exact |
-| Maximum memory length | `4` | Exact |
-| Initial species count | `6` | Exact |
-| Initial memory length | `1` | Exact |
-| Maximum species count | `9` | Exact |
-| `PointAdd` | `0.1` | Exact |
-| `PointRemove` | `0.1` | Exact |
-| `Dupli` | `0.001` | Exact |
-| `RemoveRecursively` | `0.001` | Exact |
-
-These values define the historical baseline, not theoretically privileged constants. Sensitivity analysis comes after baseline reproduction.
-
----
-
-# 5. M3 source reconstruction: species matching and fitness
-
-The detailed source reconstruction is recorded in [`M3_SOURCE_RECONSTRUCTION.md`](M3_SOURCE_RECONSTRUCTION.md).
-
-## 5.1 Species — Exact
-
-Individuals with identical strategies form a species. Let `x_i` be species `i`'s population fraction. Own-species interactions are included.
-
-## 5.2 Interaction payoff tensor — Exact mechanism
-
-For an ordered species triple, define
-
-\[
-g_{ijk}
-\]
-
-as the focal species-`i` individual's average payoff per round in the repeated three-person interaction with partner species `j` and `k`.
-
-Because the strategy itself distinguishes left and right positions, the partner slots are ordered. For implementation we name `j = left`, `k = right`; this letter assignment is a **Reconstructed convention** while positional distinction is **Exact**.
-
-## 5.3 Species score — Exact
+For focal species `i`, left species `j`, and right species `k`, `g_ijk` is focal average payoff per round. Species score is
 
 \[
 s_i=\sum_j\sum_k g_{ijk}x_jx_k.
 \]
 
-Thus `(j,k)` and `(k,j)` are separate contributions when `j != k`. Partner combinations such as `j=i`, `k=i`, and `j=k` are permitted because individuals play the whole population including their own species.
-
-No additional unordered-triple or six-permutation averaging rule is introduced.
-
-## 5.4 Population mean and fitness — Exact
+Own-species partners are included and left/right slots remain ordered. The population mean and fitness are
 
 \[
 \bar{s}=\sum_i x_i s_i,
-\]
-
-\[
+\qquad
 w_i=s_i-\bar{s}.
 \]
 
-The recovered population update is
+### 3.6 Population update — Exact mechanism and baseline
 
 \[
 x_i(t+1)-x_i(t)=d\,w_i\,x_i(t),
 \]
 
-followed by normalization.
+followed by normalization. Historical baseline: `d = 0.2`.
 
-Historical baseline: `d = 0.2`.
+### 3.7 Extinction — Exact mechanism and baseline
 
-## 5.5 Extinction — Exact mechanism
+A below-average species that falls below `KillLimit` is removed. Historical baseline: `KillLimit = 0.2`.
 
-A species with below-average score whose population falls below `KillLimit` is removed. Historical baseline: `KillLimit = 0.2`.
+The current implementation evaluates the threshold after the growth step and before survivor normalization. That **timing is Reconstructed** from the described update sequence.
 
----
+### 3.8 Explicit chromosome + mutation — Exact mechanisms
 
-# 6. M3 source reconstruction: four tree mutations
+Historical maximum depth: `4`.
 
-M3 must mutate the explicit historical 8-ary chromosome, not a generic GP or neural representation.
+| Operator | Rate | Source-recovered action | Executable provenance |
+|:---|---:|:---|:---|
+| `PointAdd` | `0.1` | add an absent branch | candidate-slot enumeration **Reconstructed** |
+| `PointRemove` | `0.1` | remove a terminal branch | **Exact** |
+| `Dupli` | `0.001` | add all 8 children to a terminal | **Exact**, behaviorally neutral at creation |
+| `RemoveRecursively` | `0.001` | remove a branch and descendants | target-as-subtree-edge **Reconstructed** |
 
-## 6.1 `PointAdd` — Exact mechanism
+The current combined mutation-pass order is
 
-Add a branch at a location where a branch is currently absent.
+`PointAdd → PointRemove → Dupli → RemoveRecursively`.
 
-Historical rate: `0.1`.
+That order is **Reconstructed**, because the inspected sources recover the four operators and their local rates but do not unambiguously specify multi-operator global ordering. It must be included in later sensitivity analysis rather than treated as historical fact.
 
-Executable branch-slot enumeration is a **Reconstructed** detail derived directly from the 8-ary tree representation: absent outgoing state branches below `MaxMemoryLength` are candidate locations.
+## 4. Historical baseline recovered
 
-## 6.2 `PointRemove` — Exact
+| Parameter | Value |
+|:---|---:|
+| Maximum rounds | `1000` |
+| Growth constant `d` | `0.2` |
+| `KillLimit` | `0.2` |
+| Maximum memory/tree depth | `4` |
+| Initial species count | `6` |
+| Initial memory length | `1` |
+| Maximum species count | `9` |
+| `PointAdd` | `0.1` |
+| `PointRemove` | `0.1` |
+| `Dupli` | `0.001` |
+| `RemoveRecursively` | `0.001` |
 
-Remove an existing terminal branch at the edge of the tree.
+These are baseline values for historical reconstruction, not theoretically privileged constants.
 
-Historical rate: `0.1`.
+## 5. Implementation map
 
-This is a local deletion; it does not recursively delete a larger internal subtree.
+| Milestone | Executable mechanism | Status |
+|:---|:---|:---|
+| **M1** | stage game + state index | Implemented |
+| **M2** | finite-history strategy + synchronous repeated interaction | Implemented |
+| **M3a** | explicit tree + four mutation operators + ordered ecological fitness + selection/extinction | Implemented |
+| **M3b** | historical initialization + mutant-species insertion/turnover + one generation | Not yet implemented |
+| **M4** | frozen multi-seed historical replication | Not yet run |
 
-## 6.3 `Dupli` — Exact
+## 6. Scientific invariants protected by tests
 
-At a terminal branch/leaf, attach all eight possible child branches simultaneously.
+The current code should protect at least these properties:
 
-Historical rate: `0.001`.
+- all 8 stage-game profiles match the source payoff rule;
+- binary action labels are symmetric;
+- state parity encodes the focal action;
+- reciprocal-prefix strategy examples match the source;
+- the explicit chromosome is prefix-closed and depth-bounded;
+- `Dupli` leaves the action phenotype unchanged at creation;
+- every ordered species triple, including self-play, enters the fitness tensor;
+- species score uses `x_j x_k` weighting;
+- equal scores produce no selection change;
+- below-average species below `KillLimit` are removed.
 
-The source explicitly states that this operation **does not change the strategy itself at the moment of duplication**. It is therefore a neutral genotype expansion that creates future separately mutable branches.
+Tests exist to protect mechanisms and invariants, not to maximize test count.
 
-## 6.4 `RemoveRecursively` — Exact mechanism
+## 7. Remaining reconstruction ledger
 
-Remove a branch together with all of its descendants recursively.
-
-Historical rate: `0.001`.
-
-Representing the mutation target as the incoming edge to a non-root subtree is the direct **Reconstructed graph interpretation** of the source wording.
-
-## 6.5 Tree depth — Exact baseline
-
-All branch growth remains bounded by
-
-\[
-\texttt{MaxMemoryLength}=4.
-\]
-
----
-
-# 7. Remaining reconstruction ledger
-
-| ID | Detail | Status / treatment | Blocks |
+| ID | Detail | Treatment | Blocks |
 |:---|:---|:---|:---|
-| A4 | Species-triple weighting and positional arrangements | **Resolved at mechanism level**: ordered partner slots and `s_i = Σ_jk g_ijk x_j x_k` | no longer blocks M3 |
-| A5 | Four mutation mechanisms | **Resolved at mechanism level**: all four structural operations recovered | no longer blocks M3 |
-| A6 | S2 generic mutation `0.1` versus S4/S5 named four-operator rates and exact multi-event order | **Partly resolved**: detailed S4/S5 rates define the four-operator baseline; global event ordering remains a low-level reconstruction detail | M3 freeze, not mechanism existence |
-| A7 | Random memory-1 tree initialization distribution | Recover if possible; otherwise explicit reconstruction distribution + sensitivity | M3 baseline freeze |
-| A8 | Original random seeds / exact independent-run count | Search archival sources; declare new multi-seed plan regardless | M4 |
-| A9 | Objective criteria for labeling regimes | Define measurable diagnostics before frozen replication | M4 |
+| **A6** | multi-operator mutation order | current order explicitly **Reconstructed**; later sensitivity | M4 freeze, not M3a existence |
+| **A7** | random memory-1 initialization distribution | recover if possible; otherwise explicit reconstruction + sensitivity | M3b |
+| **A10** | rule for inserting/merging mutant chromosomes as species under max-species constraint | recover from S4/S5 or reconstruct transparently | M3b |
+| **A8** | original seeds / independent-run count | new frozen multi-seed plan regardless | M4 |
+| **A9** | objective regime diagnostics | define before frozen run | M4 |
 
-### Important boundary
+The critical current gap is **species turnover bookkeeping**. We will not infer population-level historical results until that mechanism is implemented.
 
-A6 does **not** justify omitting any mutation operator. If operation order cannot be recovered, we will choose a deterministic documented order, label it **Reconstructed**, and test sensitivity to alternative orders.
+## 8. Stage boundary
 
-Likewise A7 does not justify omitting random initialization: the initialization mechanism is known, so an unrecovered distribution becomes a reconstruction choice.
+### Stage 1 — recreate
 
----
+M0–M4 reconstruct the historical experiment using Exact, Reconstructed, and where necessary Estimated components.
 
-# 8. Completed milestone status
+### Stage 2 — recombine
 
-### M1 — complete
+Only after a citable Stage-1 replication may later published mechanisms be added, each labeled Recombined.
 
-Stage game + relational state representation.
+### Stage 3 — invent
 
-### M2 — complete at implementation level
+Only after Stages 1 and 2 provide enough understanding may genuinely new mechanisms or theory be introduced, labeled Novel.
 
-Finite-history strategy semantics + fixed-position deterministic repeated interaction.
+## Strongest defensible statement at M3a
 
-### M3 source reconstruction — complete at mechanism level
-
-Recovered before code:
-
-- ordered species matching and population weighting;
-- `g_ijk`, `s_i`, population mean, and fitness construction;
-- all four named tree mutation mechanisms and rates.
-
-**No M3 evolutionary code has been added in this bounded step.**
-
----
-
-# 9. Next authorized implementation boundary
-
-If M3 implementation begins, it is limited to the already sourced mechanisms:
-
-1. explicit 8-ary chromosome topology;
-2. ordered species-triple interaction scores `g_ijk`;
-3. population-weighted species scores `s_i`;
-4. the four historical mutation operators;
-5. replicator-like population update and normalization;
-6. extinction with `KillLimit`.
-
-No later ALife mechanism, geopolitical interpretation, additional optimizer, or novel theory enters M3.
-
-## Strongest defensible statement now
-
-> The source record now specifies the causal machinery required for the next evolutionary layer: each species is evaluated against ordered pairs drawn from the current population distribution, and the 8-ary chromosome evolves through four identifiable branch operators (`PointAdd`, `PointRemove`, `Dupli`, `RemoveRecursively`). One low-level question about multi-operator event ordering remains explicit, but the evolutionary mechanisms themselves no longer need to be guessed or omitted.
+> The repository now executes the source-recovered causal core from stage interaction through ecological fitness, relative selection, extinction, and explicit 8-ary tree mutation. It does not yet execute the historical species-birth/turnover process and therefore makes no claim to reproduce the paper's evolutionary regimes.
