@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400" role="img" aria-labelledby="title desc">
+  <title id="title">Three-person coalition game</title>
+  <desc id="desc">Akiyama–Kaneko artificial-life reconstruction. An illustrative round shows player A choosing 1 and receiving 0, while B and C choose 0 and each receive 3. A small eight-branch tree represents the eight possible remembered states. This is a mechanism illustration, not an experimental result.</desc>
+  <rect width="1200" height="400" fill="#FFFFFF"/>
+  <rect x="1" y="1" width="1198" height="398" rx="8" fill="none" stroke="#E2E8F0"/>
+  <path d="M48 48H84" stroke="#0072B2" stroke-width="4"/>
+  <g font-family="DejaVu Sans, Arial, sans-serif" fill="#111827">
+    <text x="100" y="54" font-size="17" fill="#475569">three-person-coalition-game</text>
+    <text x="48" y="124" font-size="50" font-weight="700">Three-person</text>
+    <text x="48" y="184" font-size="50" font-weight="700">coalition game</text>
+    <text x="48" y="232" font-size="21" fill="#475569">Coalition structure in an artificial-life ecology.</text>
+    <text x="48" y="268" font-size="17" fill="#475569">A source-anchored reconstruction of Akiyama &amp; Kaneko</text>
+    <path d="M690 48V286" stroke="#E2E8F0"/>
+    <g stroke-linecap="round">
+      <path d="M932 100L814 224M932 100L1050 224" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="5 7"/>
+      <path d="M814 224H1050" stroke="#0072B2" stroke-width="6"/>
+      <circle cx="932" cy="100" r="25" fill="#FFFFFF" stroke="#94A3B8" stroke-width="2"/>
+      <circle cx="814" cy="224" r="25" fill="#FFFFFF" stroke="#0072B2" stroke-width="3"/>
+      <circle cx="1050" cy="224" r="25" fill="#FFFFFF" stroke="#0072B2" stroke-width="3"/>
+    </g>
+    <g text-anchor="middle" font-size="23" font-weight="700">
+      <text x="932" y="108">1</text>
+      <text x="814" y="232" fill="#0072B2">0</text>
+      <text x="1050" y="232" fill="#0072B2">0</text>
+    </g>
+    <g font-size="17" text-anchor="middle" fill="#475569">
+      <text x="932" y="55">A · payoff 0</text>
+      <text x="814" y="278">B · payoff 3</text>
+      <text x="1050" y="278">C · payoff 3</text>
+      <text x="932" y="206" fill="#0072B2">Matching pair</text>
+    </g>
+    <path d="M48 312H1152" stroke="#E2E8F0"/>
+    <text x="48" y="351" font-size="18">Recreate <tspan fill="#94A3B8">→</tspan> recombine <tspan fill="#94A3B8">→</tspan> invent</text>
+    <text x="648" y="353" font-size="16" fill="#475569">8-ary memory</text>
+    <g fill="none" stroke="#94A3B8" stroke-width="1.2">
+      <path d="M988 333L834 363M988 333L878 363M988 333L922 363M988 333L966 363M988 333L1010 363M988 333L1054 363M988 333L1098 363M988 333L1142 363"/>
+    </g>
+    <circle cx="988" cy="333" r="4" fill="#0072B2"/>
+    <g font-size="14" fill="#475569" text-anchor="middle">
+      <text x="834" y="384">0</text><text x="878" y="384">1</text>
+      <text x="922" y="384">2</text><text x="966" y="384">3</text>
+      <text x="1010" y="384">4</text><text x="1054" y="384">5</text>
+      <text x="1098" y="384">6</text><text x="1142" y="384">7</text>
+    </g>
+  </g>
+</svg>
