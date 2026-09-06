@@ -15,25 +15,13 @@ from collections import Counter
 from pathlib import Path
 from random import Random
 
-from three_person_coalition_game.evolution import (
-    generation_step,
-    historical_initial_population,
-)
+from three_person_coalition_game.evolution import generation_step, historical_initial_population
 
 
 SEED_PAIRS = ((7, 11), (17, 23), (29, 31))
 GENERATIONS = 25
 ROUNDS = 1000
 MUTATION_OUTCOMES = ("unchanged", "new", "merged", "blocked_at_cap")
-
-
-def chromosome_record(chromosome):
-    return {
-        "initial_action": chromosome.initial_action,
-        "genes": [list(gene) for gene in chromosome.leaves],
-        "node_count": len(chromosome.nodes),
-        "max_depth": max((len(node) for node in chromosome.nodes), default=0),
-    }
 
 
 def population_snapshot(generation, population, audit=None):
@@ -48,21 +36,14 @@ def population_snapshot(generation, population, audit=None):
             for frequency in frequencies
             if frequency > 0.0
         ),
-        "mean_node_count": sum(
-            len(chromosome.nodes)
-            for chromosome in population.chromosomes
-        )
+        "mean_node_count": sum(len(chromosome.nodes) for chromosome in population.chromosomes)
         / len(population.chromosomes),
-        "max_node_count": max(
-            len(chromosome.nodes)
-            for chromosome in population.chromosomes
-        ),
+        "max_node_count": max(len(chromosome.nodes) for chromosome in population.chromosomes),
         "max_memory_depth": max(
             max((len(node) for node in chromosome.nodes), default=0)
             for chromosome in population.chromosomes
         ),
     }
-
     if audit is not None:
         outcomes = Counter(event.outcome for event in audit.mutation_events)
         snapshot.update(
@@ -72,8 +53,7 @@ def population_snapshot(generation, population, audit=None):
                 "score_max": max(audit.scores),
                 "extinct_count": len(audit.extinct),
                 "mutation_outcomes": {
-                    outcome: outcomes.get(outcome, 0)
-                    for outcome in MUTATION_OUTCOMES
+                    outcome: outcomes.get(outcome, 0) for outcome in MUTATION_OUTCOMES
                 },
             }
         )
@@ -97,43 +77,27 @@ def run_trajectory(initial_seed: int, mutation_seed: int):
         trajectory.append(population_snapshot(generation, population, audit))
 
     cap_generation = next(
-        (
-            row["generation"]
-            for row in trajectory
-            if row["species_count"] == 9
-        ),
+        (row["generation"] for row in trajectory if row["species_count"] == 9),
         None,
     )
     mutation_totals = {
         outcome: sum(
-            row.get("mutation_outcomes", {}).get(outcome, 0)
-            for row in trajectory[1:]
+            row.get("mutation_outcomes", {}).get(outcome, 0) for row in trajectory[1:]
         )
         for outcome in MUTATION_OUTCOMES
     }
-
     return {
         "initial_seed": initial_seed,
         "mutation_seed": mutation_seed,
         "summary": {
             "species_cap_first_reached_generation": cap_generation,
-            "total_extinctions": sum(
-                row.get("extinct_count", 0)
-                for row in trajectory[1:]
-            ),
+            "total_extinctions": sum(row.get("extinct_count", 0) for row in trajectory[1:]),
             "mutation_outcome_totals": mutation_totals,
             "final_mean_score": trajectory[-1]["mean_score"],
             "final_dominant_frequency": trajectory[-1]["dominant_frequency"],
             "final_max_memory_depth": trajectory[-1]["max_memory_depth"],
         },
         "trajectory": trajectory,
-        "final_population": {
-            "frequencies": list(population.frequencies),
-            "chromosomes": [
-                chromosome_record(chromosome)
-                for chromosome in population.chromosomes
-            ],
-        },
         "unique_cached_matchups": len(payoff_cache),
     }
 
@@ -145,9 +109,7 @@ def diagnostic_row(run, snapshot):
         "mutation_seed": run["mutation_seed"],
         "generation": snapshot["generation"],
         "species_count": snapshot["species_count"],
-        "frequencies": " ".join(
-            f"{value:.17g}" for value in snapshot["frequencies"]
-        ),
+        "frequencies": " ".join(f"{value:.17g}" for value in snapshot["frequencies"]),
         "dominant_frequency": snapshot["dominant_frequency"],
         "frequency_entropy_nats": snapshot["frequency_entropy_nats"],
         "mean_score": snapshot.get("mean_score", ""),
@@ -164,11 +126,17 @@ def diagnostic_row(run, snapshot):
     }
 
 
+def write_seed_diagnostics(evidence_dir: Path, run) -> None:
+    rows = [diagnostic_row(run, snapshot) for snapshot in run["trajectory"]]
+    destination = evidence_dir / f"m3c_seed_{run['initial_seed']}_diagnostics.csv"
+    with destination.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=rows[0].keys())
+        writer.writeheader()
+        writer.writerows(rows)
+
+
 def main() -> None:
-    runs = [
-        run_trajectory(initial_seed, mutation_seed)
-        for initial_seed, mutation_seed in SEED_PAIRS
-    ]
+    runs = [run_trajectory(initial_seed, mutation_seed) for initial_seed, mutation_seed in SEED_PAIRS]
     configuration = {
         "generations": GENERATIONS,
         "seed_pairs": [list(pair) for pair in SEED_PAIRS],
@@ -192,7 +160,6 @@ def main() -> None:
             "RemoveRecursively",
         ],
     }
-
     evidence_dir = Path(__file__).resolve().parents[1] / "evidence"
     evidence_dir.mkdir(exist_ok=True)
 
@@ -210,7 +177,6 @@ def main() -> None:
                 "initial_seed": run["initial_seed"],
                 "mutation_seed": run["mutation_seed"],
                 "summary": run["summary"],
-                "final_population": run["final_population"],
                 "unique_cached_matchups": run["unique_cached_matchups"],
             }
             for run in runs
@@ -220,20 +186,8 @@ def main() -> None:
         json.dumps(summary_payload, indent=2) + "\n",
         encoding="utf-8",
     )
-
-    rows = [
-        diagnostic_row(run, snapshot)
-        for run in runs
-        for snapshot in run["trajectory"]
-    ]
-    with (evidence_dir / "m3c_25_generation_diagnostics.csv").open(
-        "w",
-        encoding="utf-8",
-        newline="",
-    ) as handle:
-        writer = csv.DictWriter(handle, fieldnames=rows[0].keys())
-        writer.writeheader()
-        writer.writerows(rows)
+    for run in runs:
+        write_seed_diagnostics(evidence_dir, run)
 
     print(json.dumps({"runs": [run["summary"] for run in runs]}, indent=2))
 
