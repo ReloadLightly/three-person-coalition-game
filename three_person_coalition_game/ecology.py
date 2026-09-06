@@ -8,15 +8,16 @@ This module implements the source-recovered ecological mechanisms:
 * replicator-like growth with historical baseline ``d = 0.2``;
 * extinction of below-average species below ``KillLimit = 0.2``.
 
-M3b exposes the pre-normalization selection step because the historical source
-places mutation after growth/extinction and normalizes only after mutation transfer.
+M3c adds two exact computational accelerations only: deterministic cycle skipping
+inside a finite-memory interaction, and optional caching of matchup payoffs across
+generations. Neither changes the model or any historical parameter.
 """
 
 from dataclasses import dataclass
 from math import isclose
 from typing import Mapping, Sequence
 
-from .interaction import play_interaction
+from .interaction import focal_states
 from .strategy import Strategy
 
 
@@ -26,6 +27,7 @@ HISTORICAL_KILL_LIMIT = 0.2
 
 Triple = tuple[int, int, int]
 FitnessTensor = dict[Triple, float]
+PayoffCache = dict[tuple[Strategy, Strategy, Strategy], float]
 
 
 def _validate_frequencies(frequencies: Sequence[float]) -> tuple[float, ...]:
@@ -39,28 +41,72 @@ def _validate_frequencies(frequencies: Sequence[float]) -> tuple[float, ...]:
     return values
 
 
+def _fixed_position_focal_total(
+    strategies: tuple[Strategy, Strategy, Strategy],
+    rounds: int,
+) -> int:
+    """Return the exact focal payoff while skipping deterministic cycles.
+
+    The next round is completely determined by the three finite histories. When the
+    joint history state repeats, the subsequent action/payoff sequence repeats too.
+    Whole copies of that cycle can therefore be skipped without approximation.
+    """
+
+    histories: list[tuple[int, ...]] = [(), (), ()]
+    seen: dict[
+        tuple[tuple[int, ...], tuple[int, ...], tuple[int, ...]],
+        tuple[int, int],
+    ] = {}
+    total = 0
+    step = 0
+
+    while step < rounds:
+        joint_history = (histories[0], histories[1], histories[2])
+        previous = seen.get(joint_history)
+        if previous is not None:
+            previous_step, previous_total = previous
+            cycle_length = step - previous_step
+            if cycle_length > 0:
+                repeats = (rounds - step) // cycle_length
+                if repeats:
+                    total += repeats * (total - previous_total)
+                    step += repeats * cycle_length
+                    continue
+        else:
+            seen[joint_history] = (step, total)
+
+        actions = tuple(
+            strategies[index].action(histories[index])
+            for index in range(3)
+        )
+        states = focal_states(actions)
+        total += states[0].payoffs[2]
+
+        histories = [
+            (histories[index] + (states[index].index,))[
+                -max(1, strategies[index].memory_length) :
+            ]
+            for index in range(3)
+        ]
+        step += 1
+
+    return total
+
+
 def historical_focal_payoff(
     focal: Strategy,
     left: Strategy,
     right: Strategy,
     rounds: int = HISTORICAL_ROUNDS,
 ) -> float:
-    """Return focal average payoff across the two historical partner seatings.
-
-    Akiyama's detailed description says that a trio first plays ``max-round`` in
-    one positional order, then two players exchange places and the trio plays
-    ``max-round`` again. Histories restart between the two interactions.
-    """
+    """Return focal average payoff across the two historical partner seatings."""
 
     if rounds <= 0:
         raise ValueError("rounds must be positive")
 
-    first = play_interaction((focal, left, right), rounds=rounds)
-    second = play_interaction((focal, right, left), rounds=rounds)
-    focal_total = sum(record.payoffs[0] for record in first) + sum(
-        record.payoffs[0] for record in second
-    )
-    return focal_total / (2 * rounds)
+    first_total = _fixed_position_focal_total((focal, left, right), rounds)
+    second_total = _fixed_position_focal_total((focal, right, left), rounds)
+    return (first_total + second_total) / (2 * rounds)
 
 
 def ordered_focal_payoff(
@@ -77,13 +123,9 @@ def ordered_focal_payoff(
 def fitness_tensor(
     strategies: Sequence[Strategy],
     rounds: int = HISTORICAL_ROUNDS,
+    payoff_cache: PayoffCache | None = None,
 ) -> FitnessTensor:
-    """Evaluate every focal/left/right species triple, including self-play.
-
-    Entries retain the ordered ``(i,j,k)`` indexing used by the ecological score,
-    while each matchup itself is averaged over the source-required swap of the two
-    partner positions.
-    """
+    """Evaluate every focal/left/right species triple, including self-play."""
 
     if not strategies:
         raise ValueError("at least one strategy is required")
@@ -94,12 +136,19 @@ def fitness_tensor(
     for i, focal in enumerate(strategies):
         for j, left in enumerate(strategies):
             for k, right in enumerate(strategies):
-                tensor[(i, j, k)] = historical_focal_payoff(
-                    focal,
-                    left,
-                    right,
-                    rounds=rounds,
-                )
+                key = (focal, left, right)
+                if payoff_cache is not None and key in payoff_cache:
+                    value = payoff_cache[key]
+                else:
+                    value = historical_focal_payoff(
+                        focal,
+                        left,
+                        right,
+                        rounds=rounds,
+                    )
+                    if payoff_cache is not None:
+                        payoff_cache[key] = value
+                tensor[(i, j, k)] = value
     return tensor
 
 
@@ -108,13 +157,22 @@ def species_scores(
     frequencies: Sequence[float],
     rounds: int = HISTORICAL_ROUNDS,
     tensor: Mapping[Triple, float] | None = None,
+    payoff_cache: PayoffCache | None = None,
 ) -> tuple[float, ...]:
     """Compute ``s_i = sum_jk g_ijk x_j x_k`` for all species."""
 
     if len(strategies) != len(frequencies):
         raise ValueError("strategies and frequencies must have the same length")
     weights = _validate_frequencies(frequencies)
-    payoff_tensor = dict(tensor) if tensor is not None else fitness_tensor(strategies, rounds)
+    payoff_tensor = (
+        dict(tensor)
+        if tensor is not None
+        else fitness_tensor(
+            strategies,
+            rounds,
+            payoff_cache=payoff_cache,
+        )
+    )
 
     expected_keys = {
         (i, j, k)
@@ -161,12 +219,7 @@ def selection_step(
     growth_constant: float = HISTORICAL_GROWTH_CONSTANT,
     kill_limit: float = HISTORICAL_KILL_LIMIT,
 ) -> SelectionStep:
-    """Apply relative-fitness growth and extinction without normalizing.
-
-    The source describes growth, extinction, then mutation, and only after those
-    operations normalization to total population 1. M3b therefore exposes the
-    intermediate unnormalized masses required for faithful generation ordering.
-    """
+    """Apply relative-fitness growth and extinction without normalizing."""
 
     weights = _validate_frequencies(frequencies)
     values = tuple(float(score) for score in scores)
