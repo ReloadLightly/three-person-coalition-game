@@ -1,10 +1,10 @@
 # Replication protocol
 
-> **Current milestone:** M3b — one-generation evolutionary integration  
-> **Study status:** Implementation validation / exploratory evidence  
+> **Current milestone:** M3c — 25-generation exploratory trajectories  
+> **Study status:** Exploratory  
 > **Research ladder:** [`RESEARCH_MANIFESTO.md`](RESEARCH_MANIFESTO.md)
 
-This file is the scientific contract for **Stage 1 — recreate**. It distinguishes source-recovered mechanisms from reconstructed executable details.
+This file is the scientific contract for **Stage 1 — recreate**. It distinguishes source-recovered mechanisms from reconstructed executable details and records the experiment boundary before the historical replication is frozen.
 
 > **Mechanisms must be source-anchored. Missing implementation details are reconstructed. Missing numerical values are estimated or swept. Known mechanisms are never deleted merely because their historical coding details are incomplete.**
 
@@ -50,7 +50,7 @@ M2's maximal-gene storage is **Reconstructed** while preserving the Exact action
 
 ### 3.4 Repeated interaction and positional swap — Exact
 
-Each fixed seating is repeated for `1000` rounds. The source then swaps two players (`A,B,C → A,C,B` in its example) and repeats another `1000` rounds. M3b evaluates both partner orientations with fresh histories.
+Each fixed seating is repeated for `1000` rounds. The source then swaps two players (`A,B,C → A,C,B` in its example) and repeats another `1000` rounds with fresh histories.
 
 ### 3.5 Ecological fitness — Exact
 
@@ -98,17 +98,19 @@ Historical start:
 - equal population `1/6` each;
 - random memory-1 tree coding.
 
-The executable generator uses independent `p=0.5` root branches and a `p=0.5` first action. This is **Reconstructed**, supported by the generation-0 branch statistics but not by preserved historical source code.
+The executable generator uses independent `p=0.5` root branches and a `p=0.5` first action. This is **Reconstructed**, supported by generation-0 branch statistics but not preserved source code.
 
 ### 3.9 Mutant birth — Exact share and order
 
-At generation change, a mutant receives **10%** of its parent's population and the parent loses that 10%. Final normalization occurs after growth/extinction and mutation.
+At generation change, an admitted mutant receives **10%** of its parent's population and the parent loses that 10%. Final normalization occurs after growth/extinction and mutation.
 
-Identical mutants merge into the identical existing species because species are defined by strategy identity.
+Identical mutants merge because species are defined by strategy identity.
 
 ### 3.10 Species capacity — Exact value; cap behavior Reconstructed
 
-Maximum species count is `9`. When already full, M3b blocks a novel mutant rather than inventing an unsupported replacement mechanism. This cap rule is **Reconstructed** and must be tested for sensitivity before M4.
+Maximum species count is `9`. The current implementation blocks a novel mutant when all nine slots are occupied and leaves the parent's mass unchanged for that rejected proposal.
+
+The value `9` is **Exact**. The full-cap bookkeeping rule is **Reconstructed**.
 
 ## 4. Historical baseline
 
@@ -129,66 +131,100 @@ Maximum species count is `9`. When already full, M3b blocks a novel mutant rathe
 | `Dupli` | `0.001` |
 | `RemoveRecursively` | `0.001` |
 
-## 5. Implementation map
+## 5. Implementation and experiment map
 
-| Milestone | Executable mechanism | Status |
+| Milestone | Scientific role | Status |
 |:---|:---|:---|
 | **M1** | stage game + state index | Implemented |
 | **M2** | finite-history strategy + synchronous repeated interaction | Implemented |
 | **M3a** | explicit tree + mutation + ecological selection/extinction | Implemented |
-| **M3b** | two-seating evaluation + initialization + mutant birth/merge/cap + one generation | **Implemented and executed once** |
-| **M4** | frozen multi-seed historical replication | Not yet run |
+| **M3b** | initialization + mutant birth/merge/cap + one generation | Implemented and executed |
+| **M3c** | three 25-generation exploratory trajectories + diagnostics | **Completed** |
+| **M3d** | resolve/sensitivity-test full-cap bookkeeping | Next |
+| **M4** | frozen historical replication with objective regime diagnostics | Not yet run |
 
-## 6. M3b experiment boundary
+## 6. Exact computational acceleration used in M3c
 
-The first evolutionary integration experiment runs **one generation only** with:
+M3c preserves the historical interaction length and evaluates the same deterministic strategies while eliminating redundant computation.
 
-- initialization seed `7`;
-- mutation seed `11`;
-- historical `1000` rounds per seating;
-- all historical baseline values above.
+### 6.1 Cycle skipping
 
-Reproduce:
+A deterministic finite-memory three-player interaction has a finite joint history state. If that exact joint state recurs, all subsequent actions and payoffs repeat. Complete future copies of that deterministic cycle can therefore be skipped exactly.
 
-```bash
-python -m experiments.m3b_one_generation
-```
+This is not an approximation and introduces no new parameter.
 
-Evidence: [`evidence/m3b_one_generation.json`](evidence/m3b_one_generation.json).
+### 6.2 Matchup payoff caching
 
-This evidence validates end-to-end generation mechanics; it is not a successful historical replication claim.
+For fixed strategies, `g_ijk` is deterministic and independent of current species frequencies. Once a strategy triple has been evaluated, the same payoff can be reused in later generations.
 
-## 7. Scientific invariants protected by tests
+Caching is likewise computational only. The accelerated evaluator is tested against explicit round-by-round two-seating execution.
 
-The implementation now protects:
+## 7. M3c exploratory experiment contract
 
-- all 8 stage-game profiles and symmetry;
-- relational state indexing;
-- source prefix-matching strategy semantics;
-- finite-memory bounded interaction histories;
-- prefix-closed explicit chromosome topology;
-- `Dupli` phenotype neutrality;
-- all four historical mutation operators;
-- source-required two-seating matchup evaluation;
-- population-weighted ecological fitness;
-- relative growth and extinction;
-- six distinct equal-population initial species;
-- exact 10% parent-to-mutant population transfer;
-- final normalization after mutation;
-- explicit Reconstructed behavior at the species cap.
+M3c uses exactly three fixed seed pairs:
 
-## 8. Remaining reconstruction ledger
+- `(initial=7, mutation=11)`;
+- `(initial=17, mutation=23)`;
+- `(initial=29, mutation=31)`.
 
-| ID | Detail | Current treatment | Blocks |
+Each trajectory runs for `25` generations with `1000` rounds per seating and all historical baseline values. The following are recorded each generation:
+
+- species count and complete frequency vector;
+- dominant species share;
+- Shannon entropy of species frequencies;
+- ecological mean/min/max scores;
+- extinction count;
+- mutation outcomes: unchanged / new / merged / blocked at cap;
+- chromosome mean/max node count;
+- maximum evolved memory depth.
+
+The purpose is diagnostic: determine whether the reconstructed ecology runs across generations and whether unresolved reconstruction choices are actually exercised strongly enough to threaten a later replication claim.
+
+## 8. M3c diagnostic result
+
+| Seeds | Cap first reached | Extinctions | New | Merged | Blocked | Final mean score | Final max depth |
+|:---|---:|---:|---:|---:|---:|---:|---:|
+| `7 / 11` | `4` | `12` | `15` | `0` | `184` | `1.5141` | `2` |
+| `17 / 23` | `3` | `4` | `7` | `2` | `187` | `0.0000` | `3` |
+| `29 / 31` | `4` | `36` | `39` | `0` | `133` | `0.8209` | `3` |
+
+Across all three short trajectories:
+
+- `504` novel mutant proposals are blocked at the current full-cap rule;
+- `61` novel mutants are admitted;
+- `2` mutants merge with an existing species.
+
+Therefore the full-cap bookkeeping is **not** a marginal low-level detail in the current reconstruction. It becomes active by generation 3–4 in every pilot and suppresses substantially more novel proposals than are admitted.
+
+The `17/23` trajectory reaches ecological mean score `0` by generation 2 and remains there through generation 25. This is an exploratory seeded observation, not evidence that the historical model generically collapses.
+
+Evidence:
+
+- [`evidence/m3c_25_generation_summary.json`](evidence/m3c_25_generation_summary.json)
+- [`evidence/m3c_seed_7_diagnostics.csv`](evidence/m3c_seed_7_diagnostics.csv)
+- [`evidence/m3c_seed_17_diagnostics.csv`](evidence/m3c_seed_17_diagnostics.csv)
+- [`evidence/m3c_seed_29_diagnostics.csv`](evidence/m3c_seed_29_diagnostics.csv)
+
+## 9. Remaining reconstruction ledger after M3c
+
+| ID | Detail | Current treatment | Priority / blocks |
 |:---|:---|:---|:---|
-| **A6** | multi-operator mutation order | explicit Reconstructed order | M4 freeze |
+| **A11** | exact behavior when nine species are already present | current rule blocks novel mutant; M3c shows this is highly consequential | **M3d / M4 freeze** |
+| **A10** | exact outer mutation scheduler | one pass per surviving species | M3d sensitivity / M4 freeze |
 | **A7** | exact historical random-tree/first-action generator | Bernoulli `0.5` reconstruction | M4 sensitivity |
-| **A10** | outer mutation scheduler | one pass per surviving species | M4 sensitivity |
-| **A11** | behavior at nine-species cap | block novel mutant | M4 sensitivity |
-| **A8** | original seeds/run count | new frozen multi-seed plan needed | M4 |
+| **A6** | multi-operator mutation order | explicit Reconstructed order | M4 sensitivity |
+| **A8** | original seeds / independent-run count | new frozen multi-seed plan needed | M4 |
 | **A9** | objective regime diagnostics | define before frozen historical replication | M4 |
 
-## 9. Stage boundary
+M3c changes the priority ordering: **A11 is now the immediate validity threat** because the experiment demonstrates that it governs hundreds of mutation proposals in only 75 total generations.
+
+## 10. Next bounded step — M3d
+
+Before M4, attempt once more to recover the historical full-cap behavior from detailed source material or archival code.
+
+If it remains unavailable, compare only a small set of defensible cap bookkeeping reconstructions under matched seeds, mutation streams, historical parameters, and diagnostics. The purpose is not to select the reconstruction that visually resembles the historical paper. It is to measure whether the conclusions we eventually want to test are robust to this unavoidable missing implementation detail.
+
+## 11. Stage boundary
 
 ### Stage 1 — recreate
 
@@ -202,6 +238,6 @@ Only after a citable Stage-1 replication may later published mechanisms be added
 
 Only after Stages 1 and 2 provide enough understanding may genuinely new mechanisms or theory be introduced, labeled Novel.
 
-## Strongest defensible statement at M3b
+## Strongest defensible statement at M3c
 
-> The repository now executes one complete source-anchored generation from historical-style initialization through two-seating interaction, ecological fitness, relative growth, extinction, mutation birth, and final normalization. Several low-level bookkeeping choices remain explicitly Reconstructed, so the one-generation run is implementation evidence rather than evidence that the historical long-run regimes have been reproduced.
+> The reconstructed Akiyama–Kaneko ecology now executes across multiple generations with historical-scale deterministic interactions, selection, extinction, mutation, and species birth. Three 25-generation pilots show genuine turnover and increasing chromosome depth, but they also show that the current Reconstructed nine-species cap rule becomes active almost immediately and blocks most novel mutant proposals. That bookkeeping choice must therefore be resolved or sensitivity-tested before a historical replication can be frozen.
