@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="assets/hero.svg" alt="Three-person coalition game: in an illustrative round, two matching players earn 3 each and the excluded player earns 0; an eight-branch tree represents finite-history memory." width="960" />
-</p>
-
 # Three-person coalition game
 
 **Reconstructing Akiyama & Kaneko's artificial-life ecology, one source-anchored mechanism at a time.**
